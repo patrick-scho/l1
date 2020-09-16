@@ -6,12 +6,12 @@ const int N = 3;
 
 void* array_new(size_t size, size_t num) {
   void* ptr = (char*)a_malloc(size * num + (N * sizeof(int)));
+  printf("new %d\n", ptr);
   int* ip = (int*)ptr;
   ip[0] = size;
   ip[1] = 0;
   ip[2] = num;
   void* result = (char*)ptr + (N * sizeof(int));
-  int a = array_get_size(result);
   return result;
 }
 
@@ -38,11 +38,6 @@ void array_free(void* array) {
   a_free(array_get_ptr(array));
 }
 
-void mmm(void* a, void* b, size_t c) {
-  for (int i = 0; i < c; i++)
-    ((char*)a)[i] = ((char*)b)[i];
-}
-
 void* array_add(void* array, void* add) {
   void* result = array;
   int size = array_get_size(array);
@@ -51,7 +46,9 @@ void* array_add(void* array, void* add) {
 
   if (length == capacity) {
     void* ptr = array_get_ptr(array);
+    printf("re %d\n", ptr);
     ptr = a_realloc(ptr, size * capacity * 2);
+    printf("new re %d\n", ptr);
     result = (char*)ptr + (N * sizeof(int));
   }
 
@@ -65,5 +62,6 @@ void* array_add(void* array, void* add) {
 
 void* array_get(void* array, int i) {
   int size = array_get_size(array);
-  return (char*)array + (i * size);
+  void* result = ((size_t*)array)[i];
+  return result;
 }
