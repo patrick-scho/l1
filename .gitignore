@@ -2,4 +2,4 @@
 !.gitignore
 !test*
 !src/*.h
-!src/*.c
+!src/*.cpp
