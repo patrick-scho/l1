@@ -1,14 +1,10 @@
-#ifndef UTIL__H
-#define UTIL__H
+#pragma once
+
+using namespace std;
 
 #include "source.h"
 
-Source read_file(const char* filename);
-
-void print(const char* fmt, ...);
+string read_file(string filename);
 
 long to_long(Source source);
 
-void copy_str(char** dest, Source src);
-
-#endif

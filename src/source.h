@@ -1,17 +1,21 @@
-#ifndef SOURCE__H
-#define SOURCE__H
+#pragma once
 
-#include <stdbool.h>
+#include <string_view>
 
-typedef struct Source {
-  char* data;
-  long size, index;
-} Source;
+using namespace std;
 
-void source_skip(Source* source, const char* str);
-bool source_cmp(Source source, const char* str);
-Source source_peek_token(Source source);
-Source source_peek_token_n(Source source, int n);
-Source source_get_token(Source* source);
+class Source {
+public:
+  string_view str;
 
-#endif
+  char get(int n = 0);
+  void adv(int n);
+
+  void skip(string_view str = "");
+  bool cmp(string_view str);
+  Source peekToken();
+  Source peekToken(int n);
+  Source getToken();
+};
+
+

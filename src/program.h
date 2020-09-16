@@ -1,76 +1,69 @@
-#ifndef PROGRAM__H
-#define PROGRAM__H
+#pragma once
+
+#include <string>
+#include <vector>
+#include <list>
 
 #include "source.h"
 
-typedef struct Variable Variable;
-typedef struct Context Context;
-typedef struct FunctionCall FunctionCall;
-typedef struct Expression Expression;
-typedef struct Function Function;
+using namespace std;
 
-typedef struct Variable {
-  char* name;
-  char* type;
-} Variable;
+class Variable;
+class Context;
+class FunctionCall;
+class Function;
+class Expression;
 
-Variable* Variable_new(Source name, Source type);
-void Variable_free(Variable* variable);
+class Variable {
+public:
+  string_view name, type;
 
-typedef struct Context {
-  Variable** variables;
-  Function** functions;
+  void print();
+};
+
+class Context {
+public:
+  list<Variable> variables;
+  list<Function> functions;
   Context* parent;
-} Context;
 
-Context* Context_new();
-Variable* Context_get_variable(Context* context, Source name);
-Function* Context_get_function(Context* context, Source name);
-void Context_free(Context* context);
+  Function* getFunction(string name);
+  Variable* getVariable(string name);
 
-typedef struct FunctionCall {
-  char* function;
-  Expression** arguments;
-} FunctionCall;
+  void print();
+};
 
-FunctionCall* FunctionCall_new(Source name);
-void FunctionCall_free(FunctionCall* functionCall);
+class FunctionCall {
+public:
+  string_view function;
+  list<Expression> arguments;
 
-typedef enum ExpressionType {
-  EXPR_FN_CALL, EXPR_FN_DECL, EXPR_VAR, EXPR_NUMBER, EXPR_STRING//, EXPR_OP
-} ExpressionType;
+  void print();
+};
 
-typedef struct Expression {
+class Function {
+public:
+  string_view name;
+  list<Variable> arguments;
+  list<Expression> expressions;
+
+  Context context;
+
+  void print();
+};
+
+enum class ExpressionType {
+  FnCall, FnDecl, Var, Number, String
+};
+
+class Expression {
+public:
   ExpressionType type;
-  union {
-    FunctionCall* functionCall;
-    Function* functionDeclaration;
-    char* variable;
-    long number;
-    char* string;
-  };
-} Expression;
+  FunctionCall functionCall;
+  Function functionDeclaration;
+  string_view variable;
+  long number;
+  string_view string;
 
-Expression* Expression_new();
-void Expression_set_string(Expression* expression, Source str);
-void Expression_free(Expression* expression);
-
-typedef struct Function {
-  Context* context;
-
-  char* name;
-
-  Variable** arguments;
-
-  Expression** expressions;
-} Function;
-
-Function* Function_new(Source name);
-void Function_free(Function* function);
-
-void Variable_print(Variable* variable);
-void FunctionCall_print(FunctionCall* functionCall);
-void Expression_print(Expression* expression);
-void Function_print(Function* function);
-
-#endif
+  void print();
+};
