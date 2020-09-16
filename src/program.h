@@ -9,72 +9,64 @@
 
 using namespace std;
 
-class Variable;
-class Context;
-class FunctionCall;
-class Function;
-class Expression;
-
-class Variable {
-public:
-  string_view name, type;
-
-  void print();
+struct Expression {
+  virtual void print() = 0;
 };
 
-class Context {
-public:
-  list<Variable> variables;
-  list<Function> functions;
+struct Variable;
+struct Context;
+struct FunctionCall;
+struct Function;
+
+struct Context {
+  list<Variable*> variables;
+  list<Function*> functions;
   Context* parent;
 
-  Function* getFunction(string name);
-  Variable* getVariable(string name);
+  //Function* getFunction(string name);
+  //Variable* getVariable(string name);
 
   void print();
 };
 
-class FunctionCall {
-public:
+struct FunctionCall : Expression {
   string_view function;
-  list<Expression> arguments;
+  list<unique_ptr<Expression>> arguments;
 
   void print();
 };
 
-class Function {
-public:
+struct Function : Expression {
   string_view name;
-  list<Variable> arguments;
-  list<Expression> expressions;
+  list<unique_ptr<Variable>> arguments;
+  list<unique_ptr<Expression>> expressions;
 
   Context context;
 
   void print();
 };
 
-class Assignment {
-public:
+struct Assignment : Expression {
   string_view var;
   unique_ptr<Expression> expression;
 
   void print();
 };
 
-enum class ExpressionType {
-  FnCall, FnDecl, Var, Number, String, Assign
+struct Variable : Expression {
+  string_view name, type;
+
+  void print();
 };
 
-class Expression {
-public:
-  ExpressionType type;
+struct Number : Expression {
+  long value;
 
-  FunctionCall functionCall;
-  Function functionDeclaration;
-  string_view variable;
-  long number;
-  string_view string;
-  Assignment assignment;
+  void print();
+};
+
+struct String : Expression {
+  string_view value;
 
   void print();
 };
