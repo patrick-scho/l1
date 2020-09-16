@@ -1,15 +1,15 @@
-set(v1 123)
-set(v2 456)
+v1 = 123
+v2 = 456
 
 print("hallo")
 
 fn f1(a:i32 b:i32) (
-  set(v1 add(a b))
-  set(v2 add(v1 v1))
+  v1 = add(a b)
+  v2 = add(v1 v1)
 
   add(v1 v2)
 )
 
-set(v3 f1(v1 v2))
+v3 = f1(v1 v2)
 
 

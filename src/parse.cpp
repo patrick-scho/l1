@@ -111,6 +111,15 @@ long parse_number(Source& source) {
   return to_long(val);
 }
 
+Assignment parse_assign(Source& source, Context& context) {
+  Source var = source.getToken();
+  Assignment result;
+  result.var = var.str;
+  source.skip("=");
+  result.expression = unique_ptr<Expression>(&parse_expr(source, context));
+  return result;
+}
+
 Expression parse_expr(Source& source, Context& context) {
   Expression result;
 
@@ -124,11 +133,11 @@ Expression parse_expr(Source& source, Context& context) {
     FunctionCall fc = parse_fn_call(source, context);
     result.functionCall = fc;
   }
-  // else if(source_cmp(source.peekToken_n(*source, 2), "=")) {
-  //   result->type = EXPR_FN_CALL;
-  //   FunctionCall* fc = parse_op_call(source);
-  //   result->functionCall = fc;
-  // }
+  else if(source.peekToken(2).cmp("=")) {
+    result.type = ExpressionType::Assign;
+    
+    result.assignment = parse_assign(source, context);
+  }
   else {
     Source val = source.peekToken();
     if (is_digit(val.get())) {

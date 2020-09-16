@@ -26,6 +26,10 @@ void Function::print() {
   }
   fmt::print(")\n");
 }
+void Assignment::print() {
+  fmt::print("{} = ", var);
+  expression->print();
+}
 void Expression::print() {
   switch (type) {
   case ExpressionType::FnCall:
@@ -38,5 +42,7 @@ void Expression::print() {
     fmt::print(string); break;
   case ExpressionType::Var:
     fmt::print(variable); break;
+  case ExpressionType::Assign:
+    assignment.print(); break;
   }
 }

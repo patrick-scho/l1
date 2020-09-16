@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <memory>
 
 #include "source.h"
 
@@ -52,18 +53,28 @@ public:
   void print();
 };
 
+class Assignment {
+public:
+  string_view var;
+  unique_ptr<Expression> expression;
+
+  void print();
+};
+
 enum class ExpressionType {
-  FnCall, FnDecl, Var, Number, String
+  FnCall, FnDecl, Var, Number, String, Assign
 };
 
 class Expression {
 public:
   ExpressionType type;
+
   FunctionCall functionCall;
   Function functionDeclaration;
   string_view variable;
   long number;
   string_view string;
+  Assignment assignment;
 
   void print();
 };

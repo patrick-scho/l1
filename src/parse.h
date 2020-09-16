@@ -20,6 +20,7 @@ FunctionCall parse_fn_call(Source& source, Context& context);
 string_view parse_var(Source& source, Context& context);
 string_view parse_string(Source& source);
 long parse_number(Source& source);
+Assignment parse_assign(Source& source, Context& context);
 Expression parse_expr(Source& source, Context& context);
 
 Function parse_file(Source& source);

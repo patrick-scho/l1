@@ -3,6 +3,8 @@
 #include "util.h"
 #include "codegen.h"
 
+#include <sstream>
+
 #include <fmt/core.h>
 
 int main(int argc, char** argv) {
@@ -10,10 +12,13 @@ int main(int argc, char** argv) {
 
   Source source { file };
   Function main = parse_file(source);
+  main.name = "main";
 
   main.print();
 
-  fmt::print(to_c(main));
+  // stringstream str;
+  // func_to_c(main, str);
+  // fmt::print("C:\n{}\n", str.str());
 
   return 0;
 }
