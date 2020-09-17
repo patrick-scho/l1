@@ -4,21 +4,21 @@
 
 void FunctionCall::print() {
   fmt::print("{}(", function);
-  for (Expression& e: arguments) {
-    e.print();
+  for (auto& e: arguments) {
+    e->print();
     fmt::print(" ");
   }
   fmt::print(")");
 }
 void Function::print() {
   fmt::print("fn {}(", name);
-  for (Variable& v: arguments) {
-    v.print();
+  for (auto& v: arguments) {
+    v->print();
     fmt::print(" ");
   }
   fmt::print(") (\n");
-  for (Expression& e: expressions) {
-    e.print();
+  for (auto& e: expressions) {
+    e->print();
     fmt::print("\n");
   }
   fmt::print(")\n");

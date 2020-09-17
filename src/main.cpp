@@ -11,10 +11,10 @@ int main(int argc, char** argv) {
   string file = read_file("test1");
 
   Source source { file };
-  Function main = parse_file(source);
-  main.name = "main";
+  auto main = parse_file(source);
+  main->name = "main";
 
-  main.print();
+  main->print();
 
   // stringstream str;
   // func_to_c(main, str);

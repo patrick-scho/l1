@@ -13,8 +13,8 @@ bool is_word_char(char c);
 bool is_digit(char c);
 bool char_in_str(char c, const char* str);
 
-void parse_arg_list(Source& source, Context& context, list<Variable>& vars);
-void parse_expr_list(Source& source, Context& context, list<Expression>& exprs);
+void parse_arg_list(Source& source, Context& context, list<unique_ptr<Variable>>& vars);
+void parse_expr_list(Source& source, Context& context, list<unique_ptr<Expression>>& exprs);
 unique_ptr<Function> parse_fn_decl(Source& source, Context& context);
 unique_ptr<FunctionCall> parse_fn_call(Source& source, Context& context);
 unique_ptr<Variable> parse_var(Source& source, Context& context);
@@ -23,4 +23,4 @@ unique_ptr<Number> parse_number(Source& source);
 unique_ptr<Assignment> parse_assign(Source& source, Context& context);
 unique_ptr<Expression> parse_expr(Source& source, Context& context);
 
-Function parse_file(Source& source);
+unique_ptr<Function> parse_file(Source& source);

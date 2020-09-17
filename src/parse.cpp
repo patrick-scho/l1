@@ -57,7 +57,7 @@ void parse_arg_list(Source &source, Context &context, list<unique_ptr<Variable>>
     auto var = make_unique<Variable>();
     var->name = name.str;
     var->type = type.str;
-    vars.push_back(var);
+    vars.push_back(move(var));
     source.skip();
   }
   source.skip(")");
@@ -69,7 +69,7 @@ void parse_expr_list(Source &source, Context &context, list<unique_ptr<Expressio
   while (!source.peekToken().cmp(")"))
   {
     auto e = parse_expr(source, context);
-    exprs.push_back(e);
+    exprs.push_back(move(e));
   }
   source.skip(")");
 }
@@ -156,7 +156,7 @@ unique_ptr<Function> parse_file(Source &source)
   {
     source.skip("");
     auto expr = parse_expr(source, result->context);
-    result->expressions.push_back(expr);
+    result->expressions.push_back(move(expr));
     source.skip("");
   }
 
