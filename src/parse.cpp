@@ -39,7 +39,7 @@ void parse_arg_list(Source &source, Context &context,
       source.getToken();
       var->type.name = source.getToken().str;
     }
-    
+
     context.variables.push_back(move(var));
 
     source.skip();
@@ -100,6 +100,8 @@ unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context) {
   result->function = context.functions.back().get();
   result->location = source.location;
 
+  context.functions.back().get()->definition = result.get();
+
   return result;
 }
 
@@ -124,6 +126,7 @@ unique_ptr<Assignment> parse_assign(Source &source, Context &context) {
   if (context.getVariable(var.str) == nullptr) {
     auto v = make_unique<Variable>();
     v->name = var.str;
+
     context.variables.push_back(move(v));
   }
 
@@ -203,6 +206,36 @@ void inferTypes(Context &context) {
   }
 }
 
+void checkDuplicates(Context &context) {
+  for (auto it1 = context.functions.begin(); it1 != context.functions.end(); it1++) {
+    it1++;
+    auto it2 = it1;
+    it1--;
+    for (; it2 != context.functions.end(); it2++) {
+      if ((*it1)->name == (*it2)->name && (*it1)->arguments.size() == (*it2)->arguments.size()) {
+        auto argIt1 = (*it1)->arguments.begin();
+        auto argIt2 = (*it2)->arguments.begin();
+        for (; argIt1 != (*it1)->arguments.end() && argIt2 != (*it2)->arguments.end(); argIt1++, argIt2++) {
+          if ((*argIt1)->type.name == (*argIt2)->type.name) {
+            throw ERROR((*it2)->definition->location, "Redefinition of Function {}", (*it2)->name);
+          }
+        }
+      }
+    }
+  }
+
+  for (auto it1 = context.variables.begin(); it1 != context.variables.end(); it1++) {
+    it1++;
+    auto it2 = it1;
+    it1--;
+    for (; it2 != context.variables.end(); it2++) {
+      if ((*it1)->name == (*it2)->name) {
+        throw ERROR((*it2)->definition->location, "Redefinition of Variable {}", (*it2)->name);
+      }
+    }
+  }
+}
+
 unique_ptr<Function> parse_file(Source &source) {
   try {
     auto result = make_unique<Function>();
@@ -215,6 +248,7 @@ unique_ptr<Function> parse_file(Source &source) {
     }
 
     inferTypes(result->context);
+    checkDuplicates(result->context);
 
     return result;
   } catch (const std::exception &ex) {

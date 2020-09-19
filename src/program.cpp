@@ -58,6 +58,8 @@ Type Function::getType(Context &context) {
     throw ERROR(definition->location, "Return Type Inference too deeply nested!");
   if (returnType.name.empty()) {
     stackDepth++;
+    if (expressions.empty())
+      throw ERROR(definition->location, "Return Type cannot be inferred");
     return expressions.back()->getType(context);
   } else {
     stackDepth = 0;
@@ -111,6 +113,9 @@ Type FunctionCall::getType(Context &context) {
     for (auto& e: arguments)
       argTypes.push_back(e->getType(context));
     function = context.getFunction(name, argTypes);
+  }
+  if (function == nullptr) {
+    throw ERROR(location, "Calling undefined Function {}", name);
   }
   return function->getType(context);
 }

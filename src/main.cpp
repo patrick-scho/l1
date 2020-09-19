@@ -7,10 +7,6 @@
 
 #include <fmt/core.h>
 
-/*
-TODO:
-- redefenition
-*/
 
 int main(int argc, char **argv) {
   string filename = "test1";
