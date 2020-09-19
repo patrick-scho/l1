@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-#include <libtcc.h>
 #include <fmt/core.h>
+#include <libtcc.h>
 
 #include "program.h"
 
@@ -17,9 +17,7 @@ char my_program[] =
   }
 )";
 
-string get_type(Function& f) {
-  return "int";
-}
+string get_type(Function &f) { return "int"; }
 
 // void to_c(unique_ptr<FunctionCall>& f, stringstream& str) {
 //   str << f.function << "(";
@@ -53,7 +51,8 @@ string get_type(Function& f) {
 
 void test() {
   TCCState *s = tcc_new();
-  if (!s) return;
+  if (!s)
+    return;
 
   tcc_set_output_type(s, TCC_OUTPUT_MEMORY);
 

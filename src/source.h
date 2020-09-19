@@ -23,4 +23,3 @@ struct Source {
   Source getToken();
 };
 
-

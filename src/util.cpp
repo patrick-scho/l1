@@ -9,7 +9,7 @@ string read_file(string filename) {
   ifs.seekg(0, ios::beg);
   string result;
   result.reserve(size);
-  char* buffer = new char[size + 1];
+  char *buffer = new char[size + 1];
   ifs.read(buffer, size);
   buffer[size] = 0;
   result.assign(buffer);

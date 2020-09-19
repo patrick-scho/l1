@@ -3,9 +3,7 @@
 #include "parse.h"
 #include "util.h"
 
-char Source::get(int n) {
-  return str[n];
-}
+char Source::get(int n) { return str[n]; }
 void Source::adv(int n) {
   for (int i = 0; i < n; i++) {
     location.col++;
@@ -46,8 +44,7 @@ Source Source::peekToken() {
     result.str = str.substr(0, len);
 
     return result;
-  }
-  else if (is_digit(get())) {
+  } else if (is_digit(get())) {
     int len = 1;
     while (is_digit(get(len))) {
       len++;
@@ -55,8 +52,7 @@ Source Source::peekToken() {
     result.str = str.substr(0, len);
 
     return result;
-  }
-  else if (get() == '"') {
+  } else if (get() == '"') {
     int len = 1;
     while (get(len) != '"') {
       len++;
@@ -64,8 +60,7 @@ Source Source::peekToken() {
     result.str = str.substr(0, len + 1);
 
     return result;
-  }
-  else {
+  } else {
     result.str = str.substr(0, 1);
 
     return result;
