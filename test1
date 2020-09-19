@@ -3,13 +3,11 @@ v2 = 456
 
 print("hallo")
 
-fn f1(a:i32 b:i32) (
+fn f1(a:i32 b c:i64) (
   v1 = add(a b)
   v2 = add(v1 v1)
 
   add(v1 v2)
 )
 
-v3 = f1(v1 v2)
-
-
+v3 = f13(v1 v2)

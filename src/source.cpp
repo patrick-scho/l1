@@ -1,11 +1,19 @@
 #include "source.h"
 
 #include "parse.h"
+#include "util.h"
 
 char Source::get(int n) {
   return str[n];
 }
 void Source::adv(int n) {
+  for (int i = 0; i < n; i++) {
+    location.col++;
+    if (str[i] == '\n')
+      location.line++;
+    if (str[i] == '\n' || str[i] == '\r')
+      location.col = 0;
+  }
   str = str.substr(n);
 }
 

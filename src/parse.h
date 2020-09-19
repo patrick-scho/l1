@@ -23,4 +23,4 @@ unique_ptr<Number> parse_number(Source& source);
 unique_ptr<Assignment> parse_assign(Source& source, Context& context);
 unique_ptr<Expression> parse_expr(Source& source, Context& context);
 
-unique_ptr<Function> parse_file(Source& source);
+unique_ptr<Function> parse_file(Source &source, list<unique_ptr<Function>>& functions);
