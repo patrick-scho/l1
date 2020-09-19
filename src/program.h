@@ -3,7 +3,7 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <vector>
+#include <tuple>
 
 #include "source.h"
 #include "util.h"
@@ -12,15 +12,27 @@ using namespace std;
 
 // predef
 
+struct Type;
 struct Context;
+struct Function;
 
 struct FunctionCall;
-struct Function;
+struct FunctionRef;
 struct Assignment;
 struct Variable;
 struct Number;
 struct String;
-struct Type;
+
+// Visitor
+
+struct Visitor {
+  virtual void visit(FunctionCall*) = 0;
+  virtual void visit(FunctionRef*) = 0;
+  virtual void visit(Assignment*) = 0;
+  virtual void visit(Variable*) = 0;
+  virtual void visit(Number*) = 0;
+  virtual void visit(String*) = 0;
+};
 
 // structs
 
@@ -30,35 +42,28 @@ struct Expression {
   virtual Type getType(Context &context) = 0;
 };
 
-struct Context {
-  list<Variable *> variables;
-  list<Function *> functions;
-  Context *parent = nullptr;
-
-  Function *getFunction(Expression *expr, string_view name);
-  Variable *getVariable(Expression *expr, string_view name);
-
-  void print();
-  Type getType(Context &context);
-};
-
 struct Type {
   string_view name;
 };
 
-struct FunctionCall : Expression {
-  string_view function;
-  list<unique_ptr<Expression>> arguments;
+struct Context {
+  list<unique_ptr<Variable>> variables;
+  list<unique_ptr<Function>> functions;
+  Context *parent = nullptr;
+
+  Function *getFunction(string_view name, list<Type>& argTypes);
+  Variable *getVariable(string_view name);
 
   void print();
-  Type getType(Context &context);
 };
 
-struct Function : Expression {
+struct Function {
   string_view name;
   Type returnType;
-  list<unique_ptr<Variable>> arguments;
+  list<Variable *> arguments;
   list<unique_ptr<Expression>> expressions;
+
+  FunctionRef *definition;
 
   Context context;
 
@@ -66,8 +71,26 @@ struct Function : Expression {
   Type getType(Context &context);
 };
 
+// expressions
+
+struct FunctionCall : Expression {
+  string_view name;
+  Function *function = nullptr;
+  list<unique_ptr<Expression>> arguments;
+
+  void print();
+  Type getType(Context &context);
+};
+
+struct FunctionRef : Expression {
+  Function *function;
+
+  void print();
+  Type getType(Context &context);
+};
+
 struct Assignment : Expression {
-  unique_ptr<Variable> var;
+  Variable *var;
   unique_ptr<Expression> expression;
 
   void print();

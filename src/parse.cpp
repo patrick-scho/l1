@@ -1,5 +1,6 @@
 #include "parse.h"
 
+#include <list>
 #include <string_view>
 
 #include <fmt/core.h>
@@ -23,7 +24,7 @@ bool is_word_char(char c) {
 bool is_digit(char c) { return (c >= '0' && c <= '9'); }
 
 void parse_arg_list(Source &source, Context &context,
-                    list<unique_ptr<Variable>> &vars) {
+                    list<Variable *> &vars) {
   source.skip("(");
 
   while (!source.peekToken().cmp(")")) {
@@ -32,119 +33,126 @@ void parse_arg_list(Source &source, Context &context,
     auto var = make_unique<Variable>();
     var->name = name.str;
     var->location = source.location;
-    vars.push_back(var);
+
+    vars.push_back(var.get());
 
     if (source.peekToken().cmp(":")) {
       source.getToken();
-      Source type = source.getToken();
-      vars.back().type.name = type.str;
+      var->type.name = source.getToken().str;
     }
+    
+    context.variables.push_back(move(var));
 
     source.skip();
   }
 
-  if (!args.empty()) {
-    Type type = args.back().type;
-    if (type.name.empty()) {
-      throw ERROR(&args.back(), "Missing Type Declaration on Argument {}",
-                  args.back().name);
-    } else {
-      for (auto it = args.crbegin(); it != args.crend(); it++) {
-        if (!it->type.name.empty())
-          type = it->type;
-
-        auto var = make_unique<Variable>();
-        var->name = it->name;
-        var->type = type;
-        var->location = it->location;
-        vars.push_front(move(var));
-        context.variables.push_front(vars.front().get());
-      }
-    }
-  }
   source.skip(")");
 }
 
 void parse_expr_list(Source &source, Context &context,
                      list<unique_ptr<Expression>> &exprs) {
   source.skip("(");
+
   while (!source.peekToken().cmp(")")) {
     auto e = parse_expr(source, context);
     exprs.push_back(move(e));
   }
+
   source.skip(")");
 }
 
-unique_ptr<Function> parse_fn_decl(Source &source, Context &context) {
+unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context) {
   source.skip("fn");
 
   Source name = source.getToken();
-  auto result = make_unique<Function>();
-  result->name = name.str;
-  result->context.parent = &context;
-  result->location = source.location;
 
-  context.functions.push_back(result.get());
+  auto func = make_unique<Function>();
+  func->name = name.str;
+  func->context.parent = &context;
 
-  parse_arg_list(source, result->context, result->arguments);
+  parse_arg_list(source, func->context, func->arguments);
 
   if (source.peekToken().cmp(":")) {
     source.getToken();
-    result->returnType = Type{source.getToken().str};
+    func->returnType.name = source.getToken().str;
   }
 
-  parse_expr_list(source, result->context, result->expressions);
+  parse_expr_list(source, func->context, func->expressions);
+
+  context.functions.push_back(move(func));
+
+  auto result = make_unique<FunctionRef>();
+  result->function = context.functions.back().get();
+  result->location = source.location;
 
   return result;
 }
 
 unique_ptr<FunctionCall> parse_fn_call(Source &source, Context &context) {
   Source name = source.getToken();
+
   auto result = make_unique<FunctionCall>();
-  result->function = name.str;
+  result->name = name.str;
   result->location = source.location;
+
   parse_expr_list(source, context, result->arguments);
+
   return result;
 }
 
 unique_ptr<Variable> parse_var(Source &source, Context &context) {
   Source val = source.getToken();
+
   auto result = make_unique<Variable>();
   result->name = val.str;
   result->location = source.location;
-  auto var = context.getVariable(result.get(), result->name);
-  if (var != nullptr)
+
+  auto var = context.getVariable(result->name);
+  if (var == nullptr)
+    throw ERROR(result, "Undefined variable {}", result->name);
+  else
     result->type = var->type;
+
   return result;
 }
 
 unique_ptr<String> parse_string(Source &source) {
   Source val = source.getToken();
+
   auto result = make_unique<String>();
   result->value = val.str;
   result->location = source.location;
+
   return result;
 }
 
 unique_ptr<Number> parse_number(Source &source) {
   Source val = source.getToken();
+
   auto result = make_unique<Number>();
   result->value = to_long(val);
   result->location = source.location;
+
   return result;
 }
 
 unique_ptr<Assignment> parse_assign(Source &source, Context &context) {
   Source var = source.getToken();
-  auto result = make_unique<Assignment>();
-  result->var = make_unique<Variable>();
-  result->location = source.location;
-  result->var->name = var.str;
-  source.skip("=");
-  result->expression = parse_expr(source, context);
-  result->var->type = result->expression->getType(context);
 
-  context.variables.push_back(result->var.get());
+  auto result = make_unique<Assignment>();
+  result->location = source.location;
+
+  if (context.getVariable(var.str) == nullptr) {
+    auto v = make_unique<Variable>();
+    v->name = var.str;
+    context.variables.push_back(move(v));
+  }
+
+  result->var = context.getVariable(var.str);
+
+  source.skip("=");
+
+  result->expression = parse_expr(source, context);
 
   return result;
 }
@@ -165,10 +173,12 @@ unique_ptr<Expression> parse_expr(Source &source, Context &context) {
 }
 
 void completeReturnTypes(Context &context) {
-  for (auto f : context.functions) {
+  for (auto &f : context.functions) {
     if (f->returnType.name.empty()) {
       f->returnType = f->expressions.back()->getType(context);
     }
+    
+    completeReturnTypes(f->context);
   }
 }
 

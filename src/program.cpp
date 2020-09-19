@@ -4,6 +4,8 @@
 
 #include "util.h"
 
+// Context
+
 void Context::print() {
   if (parent != nullptr)
     parent->print();
@@ -18,33 +20,27 @@ void Context::print() {
   }
   fmt::print("]\n");
 }
-Function *Context::getFunction(Expression *expr, string_view name) {
-  for (auto f : functions) {
+Function *Context::getFunction(string_view name, list<Type>& argTypes) {
+  for (auto& f : functions) {
     if (f->name == name)
-      return f;
+      return f.get();
   }
   if (parent != nullptr)
-    return parent->getFunction(expr, name);
-  throw ERROR(expr, "Undefined Function {}", name);
+    return parent->getFunction(name, argTypes);
+  return nullptr;
 }
-Variable *Context::getVariable(Expression *expr, string_view name) {
-  for (auto v : variables) {
+Variable *Context::getVariable(string_view name) {
+  for (auto& v : variables) {
     if (v->name == name)
-      return v;
+      return v.get();
   }
   if (parent != nullptr)
-    return parent->getVariable(expr, name);
-  throw ERROR(expr, "Undefined Variable {}", name);
+    return parent->getVariable(name);
+  return nullptr;
 }
 
-void FunctionCall::print() {
-  fmt::print("{}( ", function);
-  for (auto &e : arguments) {
-    e->print();
-    fmt::print(" ");
-  }
-  fmt::print(")");
-}
+// Function
+
 void Function::print() {
   fmt::print("fn {}( ", name);
   for (auto &v : arguments) {
@@ -59,6 +55,32 @@ void Function::print() {
   }
   fmt::print(")\n");
 }
+Type Function::getType(Context &context) {
+  static int stackDepth = 0;
+  if (stackDepth > 10)
+    throw ERROR(definition, "Return Type Inference too deeply nested!");
+  if (returnType.name.empty()) {
+    stackDepth++;
+    return expressions.back()->getType(context);
+  } else {
+    stackDepth = 0;
+    return returnType;
+  }
+}
+
+// Expressions
+
+void FunctionCall::print() {
+  fmt::print("{}( ", name);
+  for (auto &e : arguments) {
+    e->print();
+    fmt::print(" ");
+  }
+  fmt::print(")");
+}
+void FunctionRef::print() {
+  fmt::print("{}", function->name);
+}
 void Assignment::print() {
   var->print();
   fmt::print(" = ");
@@ -69,19 +91,16 @@ void Number::print() { fmt::print("{}", value); }
 void String::print() { fmt::print("{}", value); }
 
 Type FunctionCall::getType(Context &context) {
-  return context.getFunction(this, function)->getType(context);
-}
-Type Function::getType(Context &context) {
-  static int stackDepth = 0;
-  if (stackDepth > 10)
-    throw ERROR(this, "Return Type Inference too deeply nested!");
-  if (returnType.name.empty()) {
-    stackDepth++;
-    return expressions.back()->getType(context);
-  } else {
-    stackDepth = 0;
-    return returnType;
+  if (function == nullptr) {
+    list<Type> argTypes;
+    for (auto& e: arguments)
+      argTypes.push_back(e->getType(context));
+    function = context.getFunction(name, argTypes);
   }
+  return function->getType(context);
+}
+Type FunctionRef::getType(Context &context) {
+  return function->getType(context);
 }
 Type Assignment::getType(Context &context) {
   return expression->getType(context);
