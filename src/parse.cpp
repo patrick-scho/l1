@@ -32,7 +32,6 @@ void parse_arg_list(Source &source, Context &context,
 
     auto var = make_unique<Variable>();
     var->name = name.str;
-    var->location = source.location;
 
     vars.push_back(var.get());
 
@@ -44,6 +43,22 @@ void parse_arg_list(Source &source, Context &context,
     context.variables.push_back(move(var));
 
     source.skip();
+  }
+
+  int typeless = 0;
+  for (auto it = vars.begin(); it != vars.end(); it++) {
+    if ((*it)->type.name.empty()) {
+      typeless++;
+    }
+    else {
+      Type type = (*it)->type;
+      auto old_it = it;
+      for (;typeless > 0; typeless--) {
+        it--;
+        (*it)->type = type;
+      }
+      it = old_it;
+    }
   }
 
   source.skip(")");
@@ -100,42 +115,6 @@ unique_ptr<FunctionCall> parse_fn_call(Source &source, Context &context) {
   return result;
 }
 
-unique_ptr<Variable> parse_var(Source &source, Context &context) {
-  Source val = source.getToken();
-
-  auto result = make_unique<Variable>();
-  result->name = val.str;
-  result->location = source.location;
-
-  auto var = context.getVariable(result->name);
-  if (var == nullptr)
-    throw ERROR(result, "Undefined variable {}", result->name);
-  else
-    result->type = var->type;
-
-  return result;
-}
-
-unique_ptr<String> parse_string(Source &source) {
-  Source val = source.getToken();
-
-  auto result = make_unique<String>();
-  result->value = val.str;
-  result->location = source.location;
-
-  return result;
-}
-
-unique_ptr<Number> parse_number(Source &source) {
-  Source val = source.getToken();
-
-  auto result = make_unique<Number>();
-  result->value = to_long(val);
-  result->location = source.location;
-
-  return result;
-}
-
 unique_ptr<Assignment> parse_assign(Source &source, Context &context) {
   Source var = source.getToken();
 
@@ -153,6 +132,42 @@ unique_ptr<Assignment> parse_assign(Source &source, Context &context) {
   source.skip("=");
 
   result->expression = parse_expr(source, context);
+  result->var->definition = result->expression.get();
+
+  return result;
+}
+
+unique_ptr<VariableRef> parse_var(Source &source, Context &context) {
+  Source val = source.getToken();
+
+  auto result = make_unique<VariableRef>();
+  result->location = source.location;
+
+  auto var = context.getVariable(val.str);
+  if (var == nullptr)
+    throw ERROR(result->location, "Undefined variable {}", val.str);
+    
+  result->variable = var;
+
+  return result;
+}
+
+unique_ptr<Number> parse_number(Source &source) {
+  Source val = source.getToken();
+
+  auto result = make_unique<Number>();
+  result->value = to_long(val);
+  result->location = source.location;
+
+  return result;
+}
+
+unique_ptr<String> parse_string(Source &source) {
+  Source val = source.getToken();
+
+  auto result = make_unique<String>();
+  result->value = val.str;
+  result->location = source.location;
 
   return result;
 }
@@ -172,13 +187,19 @@ unique_ptr<Expression> parse_expr(Source &source, Context &context) {
     return parse_var(source, context);
 }
 
-void completeReturnTypes(Context &context) {
+void inferTypes(Context &context) {
   for (auto &f : context.functions) {
     if (f->returnType.name.empty()) {
-      f->returnType = f->expressions.back()->getType(context);
+      f->returnType = f->getType(context);
     }
     
-    completeReturnTypes(f->context);
+    inferTypes(f->context);
+  }
+
+  for (auto &v : context.variables) {
+    if (v->type.name.empty()) {
+      v->type = v->getType(context);
+    }
   }
 }
 
@@ -193,7 +214,7 @@ unique_ptr<Function> parse_file(Source &source) {
       source.skip("");
     }
 
-    completeReturnTypes(result->context);
+    inferTypes(result->context);
 
     return result;
   } catch (const std::exception &ex) {

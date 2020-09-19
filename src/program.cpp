@@ -7,18 +7,15 @@
 // Context
 
 void Context::print() {
-  if (parent != nullptr)
-    parent->print();
   fmt::print("[ ");
-  for (auto &f : functions) {
-    fmt::print("{}(fn)", f->name);
-    fmt::print(" ");
-  }
   for (auto &v : variables) {
     fmt::print("{}({})", v->name, v->type.name);
     fmt::print(" ");
   }
   fmt::print("]\n");
+  for (auto &f : functions) {
+    f->print();
+  }
 }
 Function *Context::getFunction(string_view name, list<Type>& argTypes) {
   for (auto& f : functions) {
@@ -58,7 +55,7 @@ void Function::print() {
 Type Function::getType(Context &context) {
   static int stackDepth = 0;
   if (stackDepth > 10)
-    throw ERROR(definition, "Return Type Inference too deeply nested!");
+    throw ERROR(definition->location, "Return Type Inference too deeply nested!");
   if (returnType.name.empty()) {
     stackDepth++;
     return expressions.back()->getType(context);
@@ -68,7 +65,21 @@ Type Function::getType(Context &context) {
   }
 }
 
+// Variable
+
+void Variable::print() {
+  fmt::print("{}({})", name, type.name);
+}
+Type Variable::getType(Context &context) {
+  if (type.name.empty()) {
+    type = definition->getType(context);
+  }
+  return type;
+}
+
 // Expressions
+
+// print
 
 void FunctionCall::print() {
   fmt::print("{}( ", name);
@@ -86,9 +97,13 @@ void Assignment::print() {
   fmt::print(" = ");
   expression->print();
 }
-void Variable::print() { fmt::print("{}({})", name, type.name); }
+void VariableRef::print() {
+  fmt::print("{}", variable->name);
+}
 void Number::print() { fmt::print("{}", value); }
 void String::print() { fmt::print("{}", value); }
+
+// getType
 
 Type FunctionCall::getType(Context &context) {
   if (function == nullptr) {
@@ -105,6 +120,6 @@ Type FunctionRef::getType(Context &context) {
 Type Assignment::getType(Context &context) {
   return expression->getType(context);
 }
-Type Variable::getType(Context &context) { return type; }
+Type VariableRef::getType(Context &context) { return variable->type; }
 Type Number::getType(Context &context) { return Type{"i32"}; }
 Type String::getType(Context &context) { return Type{"string"}; }

@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+#include <fmt/core.h>
+
 string read_file(string filename) {
   ifstream ifs(filename, ios::in | ios::binary);
   ifs.seekg(0, ios::end);

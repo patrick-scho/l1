@@ -8,10 +8,10 @@
 
 using namespace std;
 
-#define ERROR(expr, ...)                                                       \
+#define ERROR(loc, ...)                                                       \
   std::runtime_error {                                                         \
-    fmt::format("[{}:{},{}] {}", (expr)->location.filename,                    \
-                (expr)->location.line, (expr)->location.col,                   \
+    fmt::format("[{}:{},{}] {}", loc.filename,                    \
+                loc.line, loc.col,                   \
                 fmt::format(__VA_ARGS__))                                      \
   }
 

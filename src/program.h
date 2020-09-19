@@ -15,24 +15,14 @@ using namespace std;
 struct Type;
 struct Context;
 struct Function;
+struct Variable;
 
 struct FunctionCall;
 struct FunctionRef;
 struct Assignment;
-struct Variable;
+struct VariableRef;
 struct Number;
 struct String;
-
-// Visitor
-
-struct Visitor {
-  virtual void visit(FunctionCall*) = 0;
-  virtual void visit(FunctionRef*) = 0;
-  virtual void visit(Assignment*) = 0;
-  virtual void visit(Variable*) = 0;
-  virtual void visit(Number*) = 0;
-  virtual void visit(String*) = 0;
-};
 
 // structs
 
@@ -71,6 +61,16 @@ struct Function {
   Type getType(Context &context);
 };
 
+struct Variable {
+  string_view name;
+  Type type;
+
+  Expression *definition;
+
+  void print();
+  Type getType(Context &context);
+};
+
 // expressions
 
 struct FunctionCall : Expression {
@@ -97,9 +97,8 @@ struct Assignment : Expression {
   Type getType(Context &context);
 };
 
-struct Variable : Expression {
-  string_view name;
-  Type type;
+struct VariableRef : Expression {
+  Variable *variable;
 
   void print();
   Type getType(Context &context);
