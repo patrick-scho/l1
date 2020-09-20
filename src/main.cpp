@@ -26,9 +26,11 @@ int main(int argc, char **argv) {
 
   stringstream str;
   str << "#include <stdio.h>" << endl;
+  
   main->context.to_c(str);
   main->to_c(str, main->context);
-  fmt::print("C:\n{}\n", str.str());
+
+  //fmt::print("C:\n{}\n", str.str());
 
   compile("test1", str.str());
 

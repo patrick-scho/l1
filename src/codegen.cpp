@@ -4,9 +4,12 @@
 #include <fstream>
 
 #include <fmt/core.h>
-#include <libtcc.h>
+#include <process.hpp>
 
 #include "program.h"
+
+using namespace std;
+using namespace TinyProcessLib;
 
   // TCCState *s = tcc_new();
   // if (!s)
@@ -42,12 +45,19 @@ void compile(const string& filename, const string& src) {
   string c_file = "tmp/" + filename + ".c";
   write_to_file(c_file, src);
   string cmd = "cl " + c_file;
-  system(cmd.c_str());
+  Process p("cmd /C " + cmd, "", [](const char *bytes, size_t n) {
+  });
+  if (p.get_exit_status() != 0)
+    fmt::print("Error compiling C source");
 }
 
 void run(const string& filename) {
-  string exe= ".\\" + filename;
-  system(exe.c_str());
+  string exe = filename;
+  Process p("cmd /C " + exe, "", [](const char *bytes, size_t n) {
+    fmt::print("{}", string(bytes, n));
+  });
+  if (p.get_exit_status() != 0)
+    fmt::print("Error running {}", filename);
 }
 
 string get_c_type(Type type) {
