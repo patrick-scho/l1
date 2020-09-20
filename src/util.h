@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdexcept>
-#include <functional>
 
 #include <fmt/core.h>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <list>
+#include <vector>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -37,11 +37,11 @@ struct Type {
 };
 
 struct Context {
-  list<unique_ptr<Variable>> variables;
-  list<unique_ptr<Function>> functions;
+  vector<unique_ptr<Variable>> variables;
+  vector<unique_ptr<Function>> functions;
   Context *parent = nullptr;
 
-  Function *getFunction(string_view name, list<Type>& argTypes);
+  Function *getFunction(string_view name, vector<Type>& argTypes);
   Variable *getVariable(string_view name);
 
   void print();
@@ -50,8 +50,8 @@ struct Context {
 struct Function {
   string_view name;
   Type returnType;
-  list<Variable *> arguments;
-  list<unique_ptr<Expression>> expressions;
+  vector<Variable *> arguments;
+  vector<unique_ptr<Expression>> expressions;
 
   FunctionRef *definition;
 
@@ -76,7 +76,7 @@ struct Variable {
 struct FunctionCall : Expression {
   string_view name;
   Function *function = nullptr;
-  list<unique_ptr<Expression>> arguments;
+  vector<unique_ptr<Expression>> arguments;
 
   void print();
   Type getType(Context &context);

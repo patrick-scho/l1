@@ -1,6 +1,6 @@
 #include "parse.h"
 
-#include <list>
+#include <vector>
 #include <string_view>
 
 #include <fmt/core.h>
@@ -24,7 +24,7 @@ bool is_word_char(char c) {
 bool is_digit(char c) { return (c >= '0' && c <= '9'); }
 
 void parse_arg_list(Source &source, Context &context,
-                    list<Variable *> &vars) {
+                    vector<Variable *> &vars) {
   source.skip("(");
 
   while (!source.peekToken().cmp(")")) {
@@ -46,18 +46,15 @@ void parse_arg_list(Source &source, Context &context,
   }
 
   int typeless = 0;
-  for (auto it = vars.begin(); it != vars.end(); it++) {
-    if ((*it)->type.name.empty()) {
+  for (int i = 0; i < vars.size(); i++) {
+    auto var = vars[i];
+    if (var->type.name.empty()) {
       typeless++;
     }
     else {
-      Type type = (*it)->type;
-      auto old_it = it;
-      for (;typeless > 0; typeless--) {
-        it--;
-        (*it)->type = type;
+      for (int j = 1; j <= typeless; i++) {
+        vars[i - j]->type = var->type;
       }
-      it = old_it;
     }
   }
 
@@ -65,7 +62,7 @@ void parse_arg_list(Source &source, Context &context,
 }
 
 void parse_expr_list(Source &source, Context &context,
-                     list<unique_ptr<Expression>> &exprs) {
+                     vector<unique_ptr<Expression>> &exprs) {
   source.skip("(");
 
   while (!source.peekToken().cmp(")")) {
@@ -207,31 +204,25 @@ void inferTypes(Context &context) {
 }
 
 void checkDuplicates(Context &context) {
-  for (auto it1 = context.functions.begin(); it1 != context.functions.end(); it1++) {
-    it1++;
-    auto it2 = it1;
-    it1--;
-    for (; it2 != context.functions.end(); it2++) {
-      if ((*it1)->name == (*it2)->name && (*it1)->arguments.size() == (*it2)->arguments.size()) {
-        auto argIt1 = (*it1)->arguments.begin();
-        auto argIt2 = (*it2)->arguments.begin();
-        for (; argIt1 != (*it1)->arguments.end() && argIt2 != (*it2)->arguments.end(); argIt1++, argIt2++) {
-          if ((*argIt1)->type.name == (*argIt2)->type.name) {
-            throw ERROR((*it2)->definition->location, "Redefinition of Function {}", (*it2)->name);
-          }
+  for (int i1 = 0; i1 < context.functions.size(); i1++) {
+    for (int i2 = i1 + 1; i2 < context.functions.size(); i2++) {
+      auto& f1 = context.functions[i1];
+      auto& f2 = context.functions[i2];
+      if (f1->name == f2->name && f1->arguments.size() == f2->arguments.size()) {
+        for (int i = 0; i < f1->arguments.size(); i++) {
+          if (f1->arguments[i]->type.name == f2->arguments[i]->type.name)
+            throw ERROR(f1->definition->location, "Redefinition of Function {}", f1->name);
         }
       }
     }
   }
-
-  for (auto it1 = context.variables.begin(); it1 != context.variables.end(); it1++) {
-    it1++;
-    auto it2 = it1;
-    it1--;
-    for (; it2 != context.variables.end(); it2++) {
-      if ((*it1)->name == (*it2)->name) {
-        throw ERROR((*it2)->definition->location, "Redefinition of Variable {}", (*it2)->name);
-      }
+  
+  for (int i1 = 0; i1 < context.variables.size(); i1++) {
+    for (int i2 = i1 + 1; i2 < context.variables.size(); i2++) {
+      auto& var1 = context.variables[i1];
+      auto& var2 = context.variables[i2];
+      if (var1->name == var2->name)
+        throw ERROR(var1->definition->location, "Redefinition of Variable {}", var1->name);
     }
   }
 }

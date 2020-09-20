@@ -17,7 +17,7 @@ void Context::print() {
     f->print();
   }
 }
-Function *Context::getFunction(string_view name, list<Type>& argTypes) {
+Function *Context::getFunction(string_view name, vector<Type>& argTypes) {
   for (auto& f : functions) {
     if (f->name == name)
       return f.get();
@@ -109,7 +109,7 @@ void String::print() { fmt::print("{}", value); }
 
 Type FunctionCall::getType(Context &context) {
   if (function == nullptr) {
-    list<Type> argTypes;
+    vector<Type> argTypes;
     for (auto& e: arguments)
       argTypes.push_back(e->getType(context));
     function = context.getFunction(name, argTypes);
