@@ -2,7 +2,7 @@ fn add(a b:i32):i32 (
   C (( a + b ))
 )
 fn print(str: string):void (
-  C (( puts(str) ))
+  C (( printf("%s\n", str) ))
 )
 fn print(i:i32):void (
   C (( printf("%d\n", i) ))

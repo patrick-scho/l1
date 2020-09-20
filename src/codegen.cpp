@@ -1,72 +1,53 @@
 #include "codegen.h"
 
 #include <sstream>
+#include <fstream>
 
 #include <fmt/core.h>
 #include <libtcc.h>
 
 #include "program.h"
 
-using ptr = int (*)(int);
+  // TCCState *s = tcc_new();
+  // if (!s)
+  //   return;
 
-char my_program[] =
-    R"(
-  int fib(int n) {
-    if (n <= 2) return 1;
-    return fib(n-1)+fib(n-2);
-  }
-)";
+  // tcc_add_include_path(s, "../../libs/tcc/include");
 
-// void to_c(unique_ptr<FunctionCall>& f, stringstream& str) {
-//   str << f.function << "(";
-//   bool comma = false;
-//   for (Expression& e: f.arguments) {
-//     if (comma) str << ", ";
-//     else comma = true;
-//     to_c(e, str);
-//   }
-//   str << ")";
-// }
+  // tcc_set_output_type(s, TCC_OUTPUT_MEMORY);
 
-// void to_c(unique_ptr<Function>& f, stringstream& str) {
-//   str << get_type(f) << " " << f.name << "(";
-//   bool comma = false;
-//   for (Variable& var: f.arguments) {
-//     if (comma) str << ", ";
-//     else comma = true;
-//     str << var.type << " " << var.name;
-//   }
-//   str << ") {\n";
-//   int i = 0; int len = f.expressions.size();
-//   for (Expression& e: f.expressions) {
-//     if (++i == len)
-//       str << "return ";
-//     expr_to_c(e, str);
-//     str << ";\n";
-//   }
-//   str << "}";
-// }
+  // if (tcc_compile_string(s, src.c_str()) == -1)
+  //   return;
 
-void test() {
-  TCCState *s = tcc_new();
-  if (!s)
-    return;
+  // if (tcc_relocate(s, TCC_RELOCATE_AUTO) < 0)
+  //   return;
 
-  tcc_set_output_type(s, TCC_OUTPUT_MEMORY);
+  // MainFn func = (MainFn)tcc_get_symbol(s, "main");
+  // if (!func)
+  //   return;
 
-  if (tcc_compile_string(s, my_program) == -1)
-    return;
+  // MainFn();
 
-  if (tcc_relocate(s, TCC_RELOCATE_AUTO) < 0)
-    return;
+  // tcc_delete(s);
 
-  ptr func = (ptr)tcc_get_symbol(s, "fib");
-  if (!func)
-    return;
+using MainFn = void(*)();
 
-  fmt::print("{}\n", func(4));
+void write_to_file(string filename, const string& file) {
+  ofstream ofs(filename, ios::binary | ios::out);
+  ofs.write(file.c_str(), file.size());
+  ofs.close();
+}
 
-  tcc_delete(s);
+void compile(const string& filename, const string& src) {
+  string c_file = "tmp/" + filename + ".c";
+  write_to_file(c_file, src);
+  string cmd = "cl " + c_file;
+  system(cmd.c_str());
+}
+
+void run(const string& filename) {
+  string exe= ".\\" + filename;
+  system(exe.c_str());
 }
 
 string get_c_type(Type type) {
