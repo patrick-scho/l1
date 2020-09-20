@@ -88,6 +88,11 @@ unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context) {
   func->name = name.str;
   func->context.parent = &context;
 
+  int n = lists::count(context.functions,
+    [&func](unique_ptr<Function>& f) { return (f->name == func->name); });
+  if (n > 0)
+    func->appendix = '0' + n;
+
   parse_arg_list(source, func->context, func->arguments);
 
   if (source.peekToken().cmp(":")) {
@@ -158,6 +163,17 @@ unique_ptr<VariableRef> parse_var(Source &source, Context &context) {
   return result;
 }
 
+unique_ptr<CCall> parse_c_call(Source &source, Context &context) {
+  auto result = make_unique<CCall>();
+  source.getToken(3);
+  int length = 0;
+  while (source.get(length + 0) != ')' || source.get(length + 1) != ')')
+    length++;
+  result->value = source.str.substr(0, length);
+  source.adv(length + 2);
+  return result;
+}
+
 unique_ptr<Number> parse_number(Source &source) {
   Source val = source.getToken();
 
@@ -172,7 +188,7 @@ unique_ptr<String> parse_string(Source &source) {
   Source val = source.getToken();
 
   auto result = make_unique<String>();
-  result->value = val.str;
+  result->value = val.str.substr(1, val.str.size() - 2);
   result->location = source.location;
 
   return result;
@@ -181,6 +197,8 @@ unique_ptr<String> parse_string(Source &source) {
 unique_ptr<Expression> parse_expr(Source &source, Context &context) {
   if (source.cmp("fn"))
     return parse_fn_decl(source, context);
+  else if (source.cmp("C") && source.peekToken(2).cmp("(") && source.peekToken(3).cmp("("))
+    return parse_c_call(source, context);
   else if (source.peekToken(2).cmp("("))
     return parse_fn_call(source, context);
   else if (source.peekToken(2).cmp("="))

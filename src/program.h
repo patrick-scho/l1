@@ -22,6 +22,7 @@ struct FunctionCall;
 struct FunctionRef;
 struct Assignment;
 struct VariableRef;
+struct CCall;
 struct Number;
 struct String;
 
@@ -31,7 +32,7 @@ struct Expression {
   Source::Location location;
   virtual void print() = 0;
   virtual Type get_type(Context &context) = 0;
-  virtual void to_c(stringstream& str) = 0;
+  virtual void to_c(stringstream& str, Context& context) = 0;
 };
 
 struct Type {
@@ -43,14 +44,16 @@ struct Context {
   vector<unique_ptr<Function>> functions;
   Context *parent = nullptr;
 
-  Function *get_function(string_view name, vector<Type>& argTypes);
-  Variable *get_variable(string_view name);
+  Function *get_function(string_view name, vector<Type>& argTypes, bool recursive = false);
+  Variable *get_variable(string_view name, bool recursive = false);
 
   void print();
+  void to_c(stringstream& str);
 };
 
 struct Function {
   string_view name;
+  string appendix;
   Type returnType;
   vector<unique_ptr<VariableRef>> arguments;
   vector<unique_ptr<Expression>> expressions;
@@ -61,7 +64,7 @@ struct Function {
 
   void print();
   Type get_type(Context &context);
-  void to_c(stringstream& str);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct Variable {
@@ -83,6 +86,7 @@ struct FunctionCall : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct FunctionRef : Expression {
@@ -90,6 +94,7 @@ struct FunctionRef : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct Assignment : Expression {
@@ -98,6 +103,7 @@ struct Assignment : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct VariableRef : Expression {
@@ -105,6 +111,15 @@ struct VariableRef : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
+};
+
+struct CCall : Expression {
+  string_view value;
+
+  void print();
+  Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct Number : Expression {
@@ -112,6 +127,7 @@ struct Number : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };
 
 struct String : Expression {
@@ -119,4 +135,5 @@ struct String : Expression {
 
   void print();
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
 };

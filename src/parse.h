@@ -21,6 +21,7 @@ unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context);
 unique_ptr<FunctionCall> parse_fn_call(Source &source, Context &context);
 unique_ptr<Assignment> parse_assign(Source &source, Context &context);
 unique_ptr<VariableRef> parse_var(Source &source, Context &context);
+unique_ptr<CCall> parse_c_call(Source &source, Context &context);
 unique_ptr<Number> parse_number(Source &source);
 unique_ptr<String> parse_string(Source &source);
 

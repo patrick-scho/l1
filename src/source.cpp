@@ -84,3 +84,9 @@ Source Source::getToken() {
   adv(result.str.length());
   return result;
 }
+
+Source Source::getToken(int n) {
+  for (int i = 0; i < n - 1; i++)
+    getToken();
+  return getToken();
+}

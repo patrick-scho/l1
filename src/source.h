@@ -21,5 +21,6 @@ struct Source {
   Source peekToken();
   Source peekToken(int n);
   Source getToken();
+  Source getToken(int n);
 };
 

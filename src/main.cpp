@@ -22,10 +22,11 @@ int main(int argc, char **argv) {
   main->name = "main";
   main->returnType = Type{"void"};
 
-  main->print();
+  //main->print();
 
   stringstream str;
-  main->to_c(str);
+  main->context.to_c(str);
+  main->to_c(str, main->context);
   fmt::print("C:\n{}\n", str.str());
 
   return 0;

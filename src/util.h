@@ -18,3 +18,26 @@ using namespace std;
 string read_file(string filename);
 
 long to_long(Source source);
+
+namespace lists {
+
+template<typename T, typename F>
+bool find(T& ts, F f) {
+  for (auto& t: ts) {
+    if (f(t))
+      return true;
+  }
+  return false;
+}
+
+template<typename T, typename F>
+int count(T& ts, F f) {
+  int result = 0;
+  for (auto& t: ts) {
+    if (f(t))
+      result++;
+  }
+  return result;
+}
+
+}

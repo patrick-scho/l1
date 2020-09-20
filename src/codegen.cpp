@@ -17,8 +17,6 @@ char my_program[] =
   }
 )";
 
-string get_type(Function &f) { return "int"; }
-
 // void to_c(unique_ptr<FunctionCall>& f, stringstream& str) {
 //   str << f.function << "(";
 //   bool comma = false;
@@ -69,4 +67,11 @@ void test() {
   fmt::print("{}\n", func(4));
 
   tcc_delete(s);
+}
+
+string get_c_type(Type type) {
+  if (type.name == "i32") return "int";
+  if (type.name == "i64") return "long";
+  if (type.name == "string") return "const char * ";
+  return "void";
 }

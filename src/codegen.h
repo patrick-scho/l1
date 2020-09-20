@@ -5,3 +5,5 @@
 using namespace std;
 
 void test();
+
+string get_c_type(Type type);
