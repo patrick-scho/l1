@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 
 #include <fmt/core.h>
 #include <process.hpp>
@@ -42,12 +43,16 @@ void write_to_file(string filename, const string& file) {
 }
 
 void compile(const string& filename, const string& src) {
+  filesystem::create_directories("tmp");
   string c_file = "tmp/" + filename + ".c";
   write_to_file(c_file, src);
-  //string cmd = "cl " + c_file;
-  //Process p("cmd /C " + cmd, "", [](const char *bytes, size_t n) {
+#ifdef _WIN32
+  string cmd = "cl " + c_file;
+  Process p("cmd /C " + cmd, "", [](const char *bytes, size_t n) {
+#else
   string cmd = "gcc " + c_file + " -o " + filename;
   Process p(cmd, "", [](const char *bytes, size_t n) {
+#endif
   });
   if (p.get_exit_status() != 0)
     fmt::print("Error compiling C source");
@@ -55,7 +60,11 @@ void compile(const string& filename, const string& src) {
 
 void run(const string& filename) {
   string exe = filename;
+#ifdef _WIN32
+  Process p("cmd /C" + exe + ".exe", "", [](const char *bytes, size_t n) {
+#else
   Process p("./" + exe, "", [](const char *bytes, size_t n) {
+#endif
     fmt::print("{}", string(bytes, n));
   });
   if (p.get_exit_status() != 0)

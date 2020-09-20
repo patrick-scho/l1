@@ -9,7 +9,7 @@
 
 
 int main(int argc, char **argv) {
-  string filename = "test1";
+  string filename = "test1.l";
   string file = read_file(filename);
 
   Source source{file};

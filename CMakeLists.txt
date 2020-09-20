@@ -11,7 +11,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_library(fmt STATIC ../../libs/fmt/src/os.cc ../../libs/fmt/src/format.cc)
 target_include_directories(fmt PUBLIC ../../libs/fmt/include)
 
+if (UNIX)
 add_library(tpl STATIC ../../libs/tiny-process-library/process.cpp ../../libs/tiny-process-library/process_unix.cpp)
+endif (UNIX)
+if (WIN32)
+add_library(tpl STATIC ../../libs/tiny-process-library/process.cpp ../../libs/tiny-process-library/process_win.cpp)
+endif (WIN32)
 target_include_directories(fmt PUBLIC ../../libs/tiny-process-library)
 
 add_executable(l1
@@ -25,9 +30,12 @@ add_executable(l1
 #target_include_directories(l1 PRIVATE ../../libs/tcc/libtcc)
 #target_link_directories(l1 PRIVATE ../../libs/tcc/libtcc)
 
-target_link_libraries(l1 fmt tpl pthread)
+target_link_libraries(l1 fmt tpl)
+if (UNIX)
+target_link_libraries(l1 pthread)
+endif (UNIX)
 
 add_custom_command(TARGET l1 POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/test1
+  ${CMAKE_CURRENT_SOURCE_DIR}/test1.l
   ${CMAKE_BINARY_DIR})
