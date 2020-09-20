@@ -24,7 +24,7 @@ bool is_word_char(char c) {
 bool is_digit(char c) { return (c >= '0' && c <= '9'); }
 
 void parse_arg_list(Source &source, Context &context,
-                    vector<Variable *> &vars) {
+                    vector<unique_ptr<VariableRef>> &vars) {
   source.skip("(");
 
   while (!source.peekToken().cmp(")")) {
@@ -33,7 +33,13 @@ void parse_arg_list(Source &source, Context &context,
     auto var = make_unique<Variable>();
     var->name = name.str;
 
-    vars.push_back(var.get());
+    auto ref = make_unique<VariableRef>();
+    ref->variable = var.get();
+    ref->location = source.location;
+
+    var->definition = ref.get();
+
+    vars.push_back(move(ref));
 
     if (source.peekToken().cmp(":")) {
       source.getToken();
@@ -47,13 +53,13 @@ void parse_arg_list(Source &source, Context &context,
 
   int typeless = 0;
   for (int i = 0; i < vars.size(); i++) {
-    auto var = vars[i];
+    auto var = vars[i]->variable;
     if (var->type.name.empty()) {
       typeless++;
     }
     else {
-      for (int j = 1; j <= typeless; i++) {
-        vars[i - j]->type = var->type;
+      for (int j = 1; j <= typeless; j++) {
+        vars[i - j]->variable->type = var->type;
       }
     }
   }
@@ -210,11 +216,12 @@ void checkDuplicates(Context &context) {
       auto& f2 = context.functions[i2];
       if (f1->name == f2->name && f1->arguments.size() == f2->arguments.size()) {
         for (int i = 0; i < f1->arguments.size(); i++) {
-          if (f1->arguments[i]->type.name == f2->arguments[i]->type.name)
-            throw ERROR(f1->definition->location, "Redefinition of Function {}", f1->name);
+          if (f1->arguments[i]->variable->type.name == f2->arguments[i]->variable->type.name)
+            throw ERROR(f2->definition->location, "Redefinition of Function {}", f1->name);
         }
       }
     }
+    checkDuplicates(context.functions[i1]->context);
   }
   
   for (int i1 = 0; i1 < context.variables.size(); i1++) {
@@ -222,7 +229,7 @@ void checkDuplicates(Context &context) {
       auto& var1 = context.variables[i1];
       auto& var2 = context.variables[i2];
       if (var1->name == var2->name)
-        throw ERROR(var1->definition->location, "Redefinition of Variable {}", var1->name);
+        throw ERROR(var2->definition->location, "Redefinition of Variable {}", var1->name);
     }
   }
 }

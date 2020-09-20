@@ -50,7 +50,7 @@ struct Context {
 struct Function {
   string_view name;
   Type returnType;
-  vector<Variable *> arguments;
+  vector<unique_ptr<VariableRef>> arguments;
   vector<unique_ptr<Expression>> expressions;
 
   FunctionRef *definition;

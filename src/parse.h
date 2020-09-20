@@ -13,7 +13,7 @@ bool is_word_char(char c);
 bool is_digit(char c);
 
 void parse_arg_list(Source &source, Context &context,
-                    vector<Variable *> &vars);
+                    vector<unique_ptr<VariableRef>> &vars);
 void parse_expr_list(Source &source, Context &context,
                      vector<unique_ptr<Expression>> &exprs);
 
