@@ -29,6 +29,8 @@ void Function::to_c(stringstream& str, Context& context) {
   for (auto& e: expressions) {
     if (returnType.name != "void" && e == expressions.back())
       str << "return ";
+    // if (dynamic_cast<FunctionRef*>(e.get()) != NULL)
+    //   continue;
     e->to_c(str, this->context);
     str << ";\n";
   }
@@ -57,7 +59,7 @@ void FunctionCall::to_c(stringstream& str, Context& context) {
   str << ")";
 }
 void FunctionRef::to_c(stringstream& str, Context& context) {
-  str << "&" << function->name;
+  //str << "&" << function->name;
 }
 void Assignment::to_c(stringstream& str, Context& context) {
   str << var->name << " = ";

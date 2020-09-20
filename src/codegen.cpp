@@ -67,7 +67,7 @@ void run(const string& filename) {
 
 string get_c_type(Type type) {
   if (type.name == "i32") return "int";
-  if (type.name == "i64") return "long";
+  if (type.name == "i64") return "long long";
   if (type.name == "string") return "const char * ";
   return "void";
 }

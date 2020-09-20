@@ -40,5 +40,5 @@ endif (UNIX)
 
 add_custom_command(TARGET l1 POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/test1.l
+  ${CMAKE_CURRENT_SOURCE_DIR}/test2.l
   ${CMAKE_BINARY_DIR})

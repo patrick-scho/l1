@@ -5,7 +5,6 @@
 #include "util.h"
 #include "codegen.h"
 
-// Context
 
 Function *Context::get_function(string_view name, vector<Type>& argTypes, bool recursive) {
   for (auto& f : functions) {

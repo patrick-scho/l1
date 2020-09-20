@@ -45,5 +45,5 @@ Type Assignment::get_type(Context &context) {
 }
 Type VariableRef::get_type(Context &context) { return variable->get_type(context); }
 Type CCall::get_type(Context &context) { return Type{"void"}; }
-Type Number::get_type(Context &context) { return Type{"i32"}; }
+Type Number::get_type(Context &context) { return Type{"i64"}; }
 Type String::get_type(Context &context) { return Type{"string"}; }

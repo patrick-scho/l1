@@ -9,16 +9,22 @@
 
 /*
 Roadmap:
+- Syntax
 - Operators
+- if/for
 - include
 - Standard Types
 - Types
 - Meta
+- Git Submodules
+- Arbitrary Precision Integers
+- Conversion
 */
 
 int main(int argc, char **argv) {
-  string filename = "test1.l";
+  string filename = "test2.l";
   string file = read_file(filename);
+
 
   Source source{file};
   source.location.filename = filename;
@@ -40,9 +46,9 @@ int main(int argc, char **argv) {
 
   //fmt::print("C:\n{}\n", str.str());
 
-  compile("test1", str.str());
+  compile(filename, str.str());
 
-  run("test1");
+  run(filename);
 
   return 0;
 }
