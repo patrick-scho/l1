@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
   compile("test1", str.str());
 
-  run("test1.exe");
+  run("test1");
 
   return 0;
 }

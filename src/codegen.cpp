@@ -44,8 +44,10 @@ void write_to_file(string filename, const string& file) {
 void compile(const string& filename, const string& src) {
   string c_file = "tmp/" + filename + ".c";
   write_to_file(c_file, src);
-  string cmd = "cl " + c_file;
-  Process p("cmd /C " + cmd, "", [](const char *bytes, size_t n) {
+  //string cmd = "cl " + c_file;
+  //Process p("cmd /C " + cmd, "", [](const char *bytes, size_t n) {
+  string cmd = "gcc " + c_file + " -o " + filename;
+  Process p(cmd, "", [](const char *bytes, size_t n) {
   });
   if (p.get_exit_status() != 0)
     fmt::print("Error compiling C source");
@@ -53,7 +55,7 @@ void compile(const string& filename, const string& src) {
 
 void run(const string& filename) {
   string exe = filename;
-  Process p("cmd /C " + exe, "", [](const char *bytes, size_t n) {
+  Process p("./" + exe, "", [](const char *bytes, size_t n) {
     fmt::print("{}", string(bytes, n));
   });
   if (p.get_exit_status() != 0)
