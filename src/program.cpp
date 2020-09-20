@@ -17,22 +17,22 @@ void Context::print() {
     f->print();
   }
 }
-Function *Context::getFunction(string_view name, vector<Type>& argTypes) {
+Function *Context::get_function(string_view name, vector<Type>& argTypes) {
   for (auto& f : functions) {
     if (f->name == name)
       return f.get();
   }
   if (parent != nullptr)
-    return parent->getFunction(name, argTypes);
+    return parent->get_function(name, argTypes);
   return nullptr;
 }
-Variable *Context::getVariable(string_view name) {
+Variable *Context::get_variable(string_view name) {
   for (auto& v : variables) {
     if (v->name == name)
       return v.get();
   }
   if (parent != nullptr)
-    return parent->getVariable(name);
+    return parent->get_variable(name);
   return nullptr;
 }
 
@@ -52,7 +52,7 @@ void Function::print() {
   }
   fmt::print(")\n");
 }
-Type Function::getType(Context &context) {
+Type Function::get_type(Context &context) {
   static int stackDepth = 0;
   if (stackDepth > 10)
     throw ERROR(definition->location, "Return Type Inference too deeply nested!");
@@ -60,7 +60,7 @@ Type Function::getType(Context &context) {
     stackDepth++;
     if (expressions.empty())
       throw ERROR(definition->location, "Return Type cannot be inferred");
-    return expressions.back()->getType(context);
+    return expressions.back()->get_type(context);
   } else {
     stackDepth = 0;
     return returnType;
@@ -72,9 +72,9 @@ Type Function::getType(Context &context) {
 void Variable::print() {
   fmt::print("{}({})", name, type.name);
 }
-Type Variable::getType(Context &context) {
+Type Variable::get_type(Context &context) {
   if (type.name.empty()) {
-    type = definition->getType(context);
+    type = definition->get_type(context);
   }
   return type;
 }
@@ -105,26 +105,26 @@ void VariableRef::print() {
 void Number::print() { fmt::print("{}", value); }
 void String::print() { fmt::print("{}", value); }
 
-// getType
+// get_type
 
-Type FunctionCall::getType(Context &context) {
+Type FunctionCall::get_type(Context &context) {
   if (function == nullptr) {
     vector<Type> argTypes;
     for (auto& e: arguments)
-      argTypes.push_back(e->getType(context));
-    function = context.getFunction(name, argTypes);
+      argTypes.push_back(e->get_type(context));
+    function = context.get_function(name, argTypes);
   }
   if (function == nullptr) {
     throw ERROR(location, "Calling undefined Function {}", name);
   }
-  return function->getType(context);
+  return function->get_type(context);
 }
-Type FunctionRef::getType(Context &context) {
-  return function->getType(context);
+Type FunctionRef::get_type(Context &context) {
+  return function->get_type(context);
 }
-Type Assignment::getType(Context &context) {
-  return expression->getType(context);
+Type Assignment::get_type(Context &context) {
+  return expression->get_type(context);
 }
-Type VariableRef::getType(Context &context) { return variable->type; }
-Type Number::getType(Context &context) { return Type{"i32"}; }
-Type String::getType(Context &context) { return Type{"string"}; }
+Type VariableRef::get_type(Context &context) { return variable->type; }
+Type Number::get_type(Context &context) { return Type{"i32"}; }
+Type String::get_type(Context &context) { return Type{"string"}; }

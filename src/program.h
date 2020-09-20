@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <sstream>
 
 #include "source.h"
 #include "util.h"
@@ -29,7 +30,8 @@ struct String;
 struct Expression {
   Source::Location location;
   virtual void print() = 0;
-  virtual Type getType(Context &context) = 0;
+  virtual Type get_type(Context &context) = 0;
+  virtual void to_c(stringstream& str) = 0;
 };
 
 struct Type {
@@ -41,8 +43,8 @@ struct Context {
   vector<unique_ptr<Function>> functions;
   Context *parent = nullptr;
 
-  Function *getFunction(string_view name, vector<Type>& argTypes);
-  Variable *getVariable(string_view name);
+  Function *get_function(string_view name, vector<Type>& argTypes);
+  Variable *get_variable(string_view name);
 
   void print();
 };
@@ -58,7 +60,8 @@ struct Function {
   Context context;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
+  void to_c(stringstream& str);
 };
 
 struct Variable {
@@ -68,7 +71,7 @@ struct Variable {
   Expression *definition;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 // expressions
@@ -79,14 +82,14 @@ struct FunctionCall : Expression {
   vector<unique_ptr<Expression>> arguments;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 struct FunctionRef : Expression {
   Function *function;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 struct Assignment : Expression {
@@ -94,26 +97,26 @@ struct Assignment : Expression {
   unique_ptr<Expression> expression;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 struct VariableRef : Expression {
   Variable *variable;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 struct Number : Expression {
   long value;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };
 
 struct String : Expression {
   string_view value;
 
   void print();
-  Type getType(Context &context);
+  Type get_type(Context &context);
 };

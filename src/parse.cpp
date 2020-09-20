@@ -126,14 +126,14 @@ unique_ptr<Assignment> parse_assign(Source &source, Context &context) {
   auto result = make_unique<Assignment>();
   result->location = source.location;
 
-  if (context.getVariable(var.str) == nullptr) {
+  if (context.get_variable(var.str) == nullptr) {
     auto v = make_unique<Variable>();
     v->name = var.str;
 
     context.variables.push_back(move(v));
   }
 
-  result->var = context.getVariable(var.str);
+  result->var = context.get_variable(var.str);
 
   source.skip("=");
 
@@ -149,7 +149,7 @@ unique_ptr<VariableRef> parse_var(Source &source, Context &context) {
   auto result = make_unique<VariableRef>();
   result->location = source.location;
 
-  auto var = context.getVariable(val.str);
+  auto var = context.get_variable(val.str);
   if (var == nullptr)
     throw ERROR(result->location, "Undefined variable {}", val.str);
     
@@ -196,7 +196,7 @@ unique_ptr<Expression> parse_expr(Source &source, Context &context) {
 void inferTypes(Context &context) {
   for (auto &f : context.functions) {
     if (f->returnType.name.empty()) {
-      f->returnType = f->getType(context);
+      f->returnType = f->get_type(context);
     }
     
     inferTypes(f->context);
@@ -204,7 +204,7 @@ void inferTypes(Context &context) {
 
   for (auto &v : context.variables) {
     if (v->type.name.empty()) {
-      v->type = v->getType(context);
+      v->type = v->get_type(context);
     }
   }
 }
