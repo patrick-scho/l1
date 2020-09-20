@@ -13,8 +13,8 @@ struct Source {
 
   Location location;
 
-  char get(int n = 0);
-  void adv(int n);
+  char get(size_t n = 0);
+  void adv(size_t n);
 
   void skip(string_view str = "");
   bool cmp(string_view str);

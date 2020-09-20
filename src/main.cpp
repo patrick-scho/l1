@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   main->print();
 
   // stringstream str;
-  // func_to_c(main, str);
+  // main->to_c(str);
   // fmt::print("C:\n{}\n", str.str());
 
   return 0;

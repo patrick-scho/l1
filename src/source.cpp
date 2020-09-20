@@ -3,8 +3,10 @@
 #include "parse.h"
 #include "util.h"
 
-char Source::get(int n) { return str[n]; }
-void Source::adv(int n) {
+char Source::get(size_t n) {
+  return str[n];
+}
+void Source::adv(size_t n) {
   for (int i = 0; i < n; i++) {
     location.col++;
     if (str[i] == '\n')
@@ -16,11 +18,11 @@ void Source::adv(int n) {
 }
 
 void Source::skip(string_view str) {
-  while (is_whitespace(get()))
+  while (this->str.size() > 0 && is_whitespace(get()))
     adv(1);
   if (cmp(str)) {
     adv(str.length());
-    while (is_whitespace(get()))
+    while (this->str.size() > 0 && is_whitespace(get()))
       adv(1);
   }
 }
