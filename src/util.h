@@ -8,11 +8,11 @@
 
 using namespace std;
 
-#define ERROR(loc, ...)                                                       \
-  std::runtime_error {                                                         \
-    fmt::format("[{}:{},{}] {}", loc.filename,                    \
-                loc.line, loc.col,                   \
-                fmt::format(__VA_ARGS__))                                      \
+#define ERROR(loc, ...) \
+  std::runtime_error { \
+    fmt::format("({}:{})[{}:{},{}] {}", __FILE__, __LINE__, loc.filename, \
+                loc.line, loc.col, \
+                fmt::format(__VA_ARGS__)) \
   }
 
 string read_file(const string& filename);

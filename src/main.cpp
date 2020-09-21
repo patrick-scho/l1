@@ -9,20 +9,25 @@
 
 /*
 Roadmap:
+- when types?
+- TCC
+- Meta
+- c_type/c_name
 - Syntax
 - Operators
 - if/for
 - include
+- import/export/using
 - Standard Types
 - Types
-- Meta
+- ZPL
 - Git Submodules
 - Arbitrary Precision Integers
 - Conversion
 */
 
 int main(int argc, char **argv) {
-  string filename = "test2.l";
+  string filename = "test1.l";
   string file = read_file(filename);
 
 
@@ -36,7 +41,9 @@ int main(int argc, char **argv) {
   main->name = "main";
   main->returnType = Type{"void"};
 
-  //main->print();
+  // stringstream str;
+  // main->print(str);
+  // fmt::print(str.str());
 
   stringstream str;
   str << "#include <stdio.h>" << endl;
@@ -44,11 +51,19 @@ int main(int argc, char **argv) {
   main->context.to_c(str);
   main->to_c(str, main->context);
 
-  //fmt::print("C:\n{}\n", str.str());
+  fmt::print("C:\n{}\n", str.str());
 
-  compile(filename, str.str());
+  test(R"(
+#include <stdio.h>
+void main() {
+  puts("henlo");
+}
+  )");
+  test(str.str());
 
-  run(filename);
+  // compile(filename, str.str());
+
+  // run(filename);
 
   return 0;
 }

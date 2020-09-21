@@ -26,14 +26,15 @@ add_executable(l1
   src/program_print.cpp
   src/program_get_type.cpp
   src/program_to_c.cpp
+  src/program_to_meta.cpp
   src/source.cpp
   src/util.cpp
   src/codegen.cpp)
 
-#target_include_directories(l1 PRIVATE ../../libs/tcc/libtcc)
-#target_link_directories(l1 PRIVATE ../../libs/tcc/libtcc)
+target_include_directories(l1 PRIVATE ../../libs/tcc/libtcc)
+target_link_directories(l1 PRIVATE ../../libs/tcc/libtcc)
 
-target_link_libraries(l1 fmt tpl)
+target_link_libraries(l1 fmt tpl libtcc)
 if (UNIX)
 target_link_libraries(l1 pthread)
 endif (UNIX)

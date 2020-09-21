@@ -8,7 +8,7 @@ using namespace std;
 struct Source {
   struct Location {
     string filename;
-    int line = 1, col = 1;
+    int line = 1, col = 1, index = 0;
   };
   string_view str;
 

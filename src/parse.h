@@ -18,6 +18,7 @@ void parse_expr_list(Source &source, Context &context,
                      vector<unique_ptr<Expression>> &exprs);
 
 unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context);
+unique_ptr<MetaFunctionRef> parse_meta_decl(Source &source, Context &context);
 unique_ptr<FunctionCall> parse_fn_call(Source &source, Context &context);
 unique_ptr<Assignment> parse_assign(Source &source, Context &context);
 unique_ptr<VariableRef> parse_var(Source &source, Context &context);

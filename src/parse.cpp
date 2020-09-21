@@ -80,7 +80,7 @@ void parse_expr_list(Source &source, Context &context,
 }
 
 unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context) {
-  source.skip("fn");
+  source.skip("func");
 
   Source name = source.getToken();
 
@@ -109,6 +109,30 @@ unique_ptr<FunctionRef> parse_fn_decl(Source &source, Context &context) {
   result->location = source.location;
 
   context.functions.back().get()->definition = result.get();
+
+  return result;
+}
+
+unique_ptr<MetaFunctionRef> parse_meta_decl(Source &source, Context &context) {
+  source.skip("meta");
+
+  Source name = source.getToken();
+
+  auto func = make_unique<MetaFunction>();
+  func->name = name.str;
+  func->location = source.location;
+  func->context.parent = &context;
+  func->context.is_meta = true;
+
+  parse_arg_list(source, func->context, func->arguments);
+
+  parse_expr_list(source, func->context, func->expressions);
+
+  context.meta_functions.push_back(move(func));
+
+  auto result = make_unique<MetaFunctionRef>();
+  result->meta_function = context.meta_functions.back().get();
+  result->location = source.location;
 
   return result;
 }
@@ -153,12 +177,15 @@ unique_ptr<VariableRef> parse_var(Source &source, Context &context) {
 
   auto result = make_unique<VariableRef>();
   result->location = source.location;
+  result->name = val.str;
 
-  auto var = context.get_variable(val.str);
-  if (var == nullptr)
-    throw ERROR(result->location, "Undefined variable {}", val.str);
-    
-  result->variable = var;
+  if (!context.is_meta_context()) {
+    auto var = context.get_variable(val.str);
+    if (var == nullptr)
+      throw ERROR(result->location, "Undefined variable {}", val.str);
+      
+    result->variable = var;
+  }
 
   return result;
 }
@@ -195,20 +222,57 @@ unique_ptr<String> parse_string(Source &source) {
 }
 
 unique_ptr<Expression> parse_expr(Source &source, Context &context) {
-  if (source.cmp("fn"))
-    return parse_fn_decl(source, context);
+  bool is_meta = false;
+  if (source.cmp("@")) {
+    is_meta = true;
+    source.getToken();
+  }
+
+  unique_ptr<Expression> result;
+
+  while (source.cmp("#")) {
+    if (source.cmp("##")) {
+      source.adv(2);
+      while (source.get() != '#' || source.get(1) != '#')
+        source.adv(1);
+      source.adv(2);
+    }
+    else {
+      source.adv(1);
+      while (source.get() != '\n')
+        source.adv(1);
+    }
+    source.skip();
+  }
+
+  if (source.cmp("func"))
+    result = parse_fn_decl(source, context);
+    
+  else if (source.cmp("meta"))
+    result = parse_meta_decl(source, context);
+
   else if (source.cmp("C") && source.peekToken(2).cmp("(") && source.peekToken(3).cmp("("))
-    return parse_c_call(source, context);
+    result = parse_c_call(source, context);
+
   else if (source.peekToken(2).cmp("("))
-    return parse_fn_call(source, context);
+    result = parse_fn_call(source, context);
+
   else if (source.peekToken(2).cmp("="))
-    return parse_assign(source, context);
+    result = parse_assign(source, context);
+
   else if (is_digit(source.peekToken().get()))
-    return parse_number(source);
+    result = parse_number(source);
+    
   else if (source.peekToken().get() == '"')
-    return parse_string(source);
+    result = parse_string(source);
+
   else
-    return parse_var(source, context);
+    result = parse_var(source, context);
+
+  if (is_meta)
+    result->is_meta = true;
+
+  return result;
 }
 
 void inferTypes(Context &context) {

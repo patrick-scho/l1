@@ -40,6 +40,9 @@ Type FunctionCall::get_type(Context &context) {
 Type FunctionRef::get_type(Context &context) {
   return function->get_type(context);
 }
+Type MetaFunctionRef::get_type(Context &context) {
+  return Type{"void"};
+}
 Type Assignment::get_type(Context &context) {
   return expression->get_type(context);
 }

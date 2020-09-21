@@ -8,6 +8,7 @@ char Source::get(size_t n) {
 }
 void Source::adv(size_t n) {
   for (int i = 0; i < n; i++) {
+    location.index++;
     location.col++;
     if (str[i] == '\n')
       location.line++;
@@ -56,7 +57,7 @@ Source Source::peekToken() {
     return result;
   } else if (get() == '"') {
     int len = 1;
-    while (get(len) != '"') {
+    while (get(len) != '"' || get(len - 1) == '\\') {
       len++;
     }
     result.str = str.substr(0, len + 1);

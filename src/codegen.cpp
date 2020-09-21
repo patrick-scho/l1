@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include <fmt/core.h>
+#include <libtcc.h>
 #include <process.hpp>
 
 #include "program.h"
@@ -12,29 +13,31 @@
 using namespace std;
 using namespace TinyProcessLib;
 
-// using MainFn = void(*)();
+void test(const string& source) {
+  using MainFn = void(*)();
 
-// TCCState *s = tcc_new();
-// if (!s)
-//   return;
+  TCCState *s = tcc_new();
+  if (!s)
+    return;
 
-// tcc_add_include_path(s, "../../libs/tcc/include");
+  tcc_add_include_path(s, "../../libs/tcc/include");
 
-// tcc_set_output_type(s, TCC_OUTPUT_MEMORY);
+  tcc_set_output_type(s, TCC_OUTPUT_MEMORY);
 
-// if (tcc_compile_string(s, src.c_str()) == -1)
-//   return;
+  if (tcc_compile_string(s, source.c_str()) == -1)
+    return;
 
-// if (tcc_relocate(s, TCC_RELOCATE_AUTO) < 0)
-//   return;
+  if (tcc_relocate(s, TCC_RELOCATE_AUTO) < 0)
+    return;
 
-// MainFn func = (MainFn)tcc_get_symbol(s, "main");
-// if (!func)
-//   return;
+  MainFn func = (MainFn)tcc_get_symbol(s, "main");
+  if (!func)
+    return;
 
-// MainFn();
+  func();
 
-// tcc_delete(s);
+  tcc_delete(s);
+}
 
 void compile(const string& filename, const string& src) {
   filesystem::create_directories("tmp");
@@ -69,5 +72,6 @@ string get_c_type(Type type) {
   if (type.name == "i32") return "int";
   if (type.name == "i64") return "long long";
   if (type.name == "string") return "const char * ";
-  return "void";
+  if (type.name == "void") return "void";
+  return string(type.name);
 }

@@ -1,24 +1,43 @@
-fn add(i1 i2:i64):i64 (
+func add(i1 i2:i64):i64 (
   C (( i1 + i2 ))
 )
-fn sub(i1 i2:i64):i64 (
+func sub(i1 i2:i64):i64 (
   C (( i1 - i2 ))
 )
-fn print(i:i64):void (
+func print(i:i64):void (
   C (( printf("%lld\n", i) ))
 )
-
-fn fib(n:i64):i64 (
-  i1 = 1
-  i2 = 1
-  C ((
-    for (int i = 1; i < n; i++) {
-      long long i3 = i1 + i2;
-      i1 = i2;
-      i2 = i3;
-    }
-  ))
-  i1
+func print(s:string):void (
+  C (( printf("%s\n", s) ))
 )
 
-print(fib(100))
+meta m1(i:i32) (
+  @print("hello")
+
+  print("he\"n\"lo")
+
+  print(@add(1 1))
+
+  print(@i)
+)
+
+## 1.
+result = ""
+
+print("hello")
+
+add(result "print(\"he\\\"n\\\"lo\")")
+
+add(result "print(")
+
+add(result add(1 1))
+
+add(result ")")
+##
+
+## 2.
+print("he\"n\"lo")
+print(2)
+##
+
+m1()

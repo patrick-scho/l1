@@ -16,6 +16,7 @@ using namespace std;
 struct Type;
 struct Context;
 struct Function;
+struct MetaFunction;
 struct Variable;
 
 struct FunctionCall;
@@ -30,9 +31,11 @@ struct String;
 
 struct Expression {
   Source::Location location;
-  virtual void print() = 0;
+  bool is_meta = false;
+  virtual void print(stringstream& str) = 0;
   virtual Type get_type(Context &context) = 0;
   virtual void to_c(stringstream& str, Context& context) = 0;
+  virtual void to_meta(stringstream& str) = 0;
 };
 
 struct Type {
@@ -42,12 +45,17 @@ struct Type {
 struct Context {
   vector<unique_ptr<Variable>> variables;
   vector<unique_ptr<Function>> functions;
+  vector<unique_ptr<MetaFunction>> meta_functions;
   Context *parent = nullptr;
 
+  bool is_meta = false;
+  bool is_meta_context();
+
   Function *get_function(string_view name, vector<Type>& argTypes, bool recursive = false);
+  MetaFunction *get_meta_function(string_view name, vector<Type>& argTypes, bool recursive = false);
   Variable *get_variable(string_view name, bool recursive = false);
 
-  void print();
+  void print(stringstream& str);
   void to_c(stringstream& str);
 };
 
@@ -62,8 +70,21 @@ struct Function {
 
   Context context;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
+};
+
+struct MetaFunction {
+  string_view name;
+  vector<unique_ptr<VariableRef>> arguments;
+  vector<unique_ptr<Expression>> expressions;
+
+  Source::Location location;
+
+  Context context;
+
+  void print(stringstream& str);
   void to_c(stringstream& str, Context& context);
 };
 
@@ -73,7 +94,7 @@ struct Variable {
 
   Expression *definition;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
 };
 
@@ -84,56 +105,73 @@ struct FunctionCall : Expression {
   Function *function = nullptr;
   vector<unique_ptr<Expression>> arguments;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct FunctionRef : Expression {
   Function *function;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
+};
+
+struct MetaFunctionRef : Expression {
+  MetaFunction *meta_function;
+
+  void print(stringstream& str);
+  Type get_type(Context &context);
+  void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct Assignment : Expression {
   Variable *var;
   unique_ptr<Expression> expression;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct VariableRef : Expression {
+  string_view name;
   Variable *variable;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct CCall : Expression {
   string_view value;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct Number : Expression {
   long value;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };
 
 struct String : Expression {
   string_view value;
 
-  void print();
+  void print(stringstream& str);
   Type get_type(Context &context);
   void to_c(stringstream& str, Context& context);
+  void to_meta(stringstream& str);
 };

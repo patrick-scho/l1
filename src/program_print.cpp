@@ -2,57 +2,76 @@
 
 #include <fmt/core.h>
 
-void Context::print() {
-  fmt::print("[ ");
+void Context::print(stringstream& str) {
+  str << "[ ";
   for (auto &v : variables) {
-    fmt::print("{}({})", v->name, v->type.name);
-    fmt::print(" ");
+    str << v->name << "(" << v->type.name << ") ";
   }
-  fmt::print("]\n");
+  str << "]\n";
   for (auto &f : functions) {
-    f->print();
+    f->print(str);
   }
 }
 
-void Function::print() {
-  fmt::print("fn {}( ", name);
+void Function::print(stringstream& str) {
+  str << "func " << name << "( ";
   for (auto &v : arguments) {
-    v->print();
-    fmt::print(" ");
+    v->print(str);
+    str << " ";
   }
-  fmt::print(") -> {} (\n", returnType.name);
-  context.print();
+  //str << ") -> " << returnType.name << " (\n";
+  str << "): " << returnType.name << " (\n";
+  //context.print(str);
   for (auto &e : expressions) {
-    e->print();
-    fmt::print("\n");
+    e->print(str);
+    str << endl;
   }
-  fmt::print(")\n");
+  str << ")\n";
 }
 
-void Variable::print() {
-  fmt::print("{}({})", name, type.name);
+void MetaFunction::print(stringstream& str) {
+  str << "func " << name << "( ";
+  for (auto &v : arguments) {
+    v->print(str);
+    str << " ";
+  }
+  str << "): void (\n";
+  //context.print(str);
+  str << "result = \"\"\n";
+  for (auto &e : expressions) {
+    e->to_meta(str);
+  }
+  str << "result\n";
+  str << ")\n";
+}
+
+void Variable::print(stringstream& str) {
+  str << name << "(" << type.name << ")";
 }
 
 
-void FunctionCall::print() {
-  fmt::print("{}( ", name);
+void FunctionCall::print(stringstream& str) {
+  str << name << "(";
   for (auto &e : arguments) {
-    e->print();
-    fmt::print(" ");
+    e->print(str);
+    str << " ";
   }
-  fmt::print(")");
+  str << ")";
 }
-void FunctionRef::print() {
-  fmt::print("{}", function->name);
+void FunctionRef::print(stringstream& str) {
+  //str << function->name;
 }
-void Assignment::print() {
-  var->print();
-  fmt::print(" = ");
-  expression->print();
+void MetaFunctionRef::print(stringstream& str) {
+  meta_function->print(str);
 }
-void VariableRef::print() {
-  fmt::print("{}", variable->name);
+void Assignment::print(stringstream& str) {
+  var->print(str);
+  str << " = ";
+  expression->print(str);
 }
-void CCall::print() { fmt::print("{}", value); }
-void Number::print() { fmt::print("{}", value); }
-void String::print() { fmt::print("\"{}\"", value); }
+void VariableRef::print(stringstream& str) {
+  str << name;
+}
+void CCall::print(stringstream& str) { str << value; }
+void Number::print(stringstream& str) { str << value; }
+void String::print(stringstream& str) { str << '"' << value << '"'; }
