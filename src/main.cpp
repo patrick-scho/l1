@@ -1,11 +1,14 @@
-#include "codegen.h"
-#include "parse.h"
-#include "program.h"
-#include "util.h"
+#include <string>
+#include <vector>
+#include <iostream>
 
-#include <sstream>
+#include "lex.hpp"
+#include "parse.hpp"
+#include "view.hpp"
+#include "program.hpp"
+#include "util.hpp"
 
-#include <fmt/core.h>
+using namespace std;
 
 /*
 Roadmap:
@@ -20,50 +23,49 @@ Roadmap:
 - import/export/using
 - Standard Types
 - Types
-- ZPL
+- ZPL/tbox
 - Git Submodules
 - Arbitrary Precision Integers
 - Conversion
 */
 
 int main(int argc, char **argv) {
-  string filename = "test1.l";
-  string file = read_file(filename);
+  string filename = argv[1];
+  u32string file = util::read_file(filename);
 
+  view::view source(filename, &file);
 
-  Source source{file};
-  source.location.filename = filename;
-  auto main = parse_file(source);
-
-  if (main == nullptr)
-    return 1;
-
-  main->name = "main";
-  main->returnType = Type{"void"};
-
-  // stringstream str;
-  // main->print(str);
-  // fmt::print(str.str());
-
-  stringstream str;
-  str << "#include <stdio.h>" << endl;
+  vector<lex::token> tokens;
   
-  main->context.to_c(str);
-  main->to_c(str, main->context);
+  try {
+    tokens = lex::lex(source);
+  }
+  catch (std::runtime_error &e) {
+    cout << e.what() << endl;
+    return 1;
+  }
 
-  fmt::print("C:\n{}\n", str.str());
+  // for (lex::token t: tokens) {
+  //   switch (t.type) {
+  //   case lex::token_type::symbol:
+  //     cout << "Symbol: " << t.s << "\t(" << t.loc.index << ')' << endl;
+  //     break;
+  //   case lex::token_type::identifier:
+  //     cout << "Identifier: " << t.s << "\t(" << t.loc.index << ')' << endl;
+  //     break;
+  //   case lex::token_type::integer:
+  //     cout << "Integer: " << t.i << "\t(" << t.loc.index << ')' << endl;
+  //     break;
+  //   case lex::token_type::decimal:
+  //     cout << "Decimal: " << t.d << "\t(" << t.loc.index << ')' << endl;
+  //     break;
+  //   case lex::token_type::string:
+  //     cout << "String: " << t.s << "\t(" << t.loc.index << ')' << endl;
+  //     break;
+  //   }
+  // }
 
-  test(R"(
-#include <stdio.h>
-void main() {
-  puts("henlo");
-}
-  )");
-  test(str.str());
-
-  // compile(filename, str.str());
-
-  // run(filename);
+  program::function main = parse::parse(tokens);
 
   return 0;
 }
