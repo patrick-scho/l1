@@ -1,13 +1,13 @@
-func add(i1 i2:i64):i64 (
+func add(i1 i2:i64) i64 (
   C (( i1 + i2 ))
 )
-func sub(i1 i2:i64):i64 (
+func sub(i1 i2:i64) i64 (
   C (( i1 - i2 ))
 )
-func print(i:i64):void (
+func print(i:i64) void (
   C (( printf("%lld\n", i) ))
 )
-func print(s:string):void (
+func print(s:string) void (
   C (( printf("%s\n", s) ))
 )
 
