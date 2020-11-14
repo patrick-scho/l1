@@ -5,6 +5,8 @@
 
 #include <fmt/core.h>
 
+#include "view.hpp"
+
 using namespace std;
 
 using s8  = int8_t;
@@ -20,9 +22,9 @@ using u64 = uint64_t;
 namespace util {
 
 template<typename T, typename ... Args>
-void crash(T t, Args... args) {
+void crash(T l, Args... args) {
   throw std::runtime_error {
-    fmt::format("[{}:{},{}] {}", t.filename, t.line, t.column, fmt::format(args...))
+    fmt::format("[{}:{},{}] {}", l.filename, l.line, l.column, fmt::format(args...))
   };
 }
 
@@ -90,5 +92,43 @@ int count(T& ts, F f) {
   }
   return result;
 }
+
+template<typename T>
+class opt {
+public:
+  bool has_value() {
+    return _has_value;
+  }
+  T & value() {
+    return _t;
+  }
+  void operator = (const T & t) {
+    _t = t;
+    _has_value = true;
+  }
+private:
+  T _t;
+  bool _has_value = false;
+};
+
+template<typename T>
+class ref {
+public:
+  ref() {}
+  ref(const T & t) {
+    _t = new T(t);
+  }
+  ~ref() { if (allocated) delete _t; }
+  void operator = (const T & t) {
+    if (allocated) delete _t;
+    _t = new T(t);
+  }
+  operator T & () {
+    return *_t;
+  }
+private:
+  T * _t;
+  bool allocated = false;
+};
 
 }

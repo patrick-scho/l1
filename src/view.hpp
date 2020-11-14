@@ -27,8 +27,9 @@ struct view {
     loc.filename = filename;
     this->str = str;
     len = str->size();
+    repr = to_str();
   }
-
+  
   s64 length() {
     return this->len;
   }
@@ -50,6 +51,7 @@ struct view {
     view result = *this;
     result.adv(off);
     result.len = len;
+    result.repr = result.to_str();
     return result;
   }
   bool end() {
@@ -64,10 +66,11 @@ struct view {
       loc.column++;
       len--;
       if (loc.index > 0 && (i-1) < len && at(i - 1) == '\n') {
-        loc.column = 0;
+        loc.column = 1;
         loc.line++;
       }
     }
+    repr = to_str();
   }
 
   view peek_skip() {
@@ -78,10 +81,20 @@ struct view {
   void skip() {
     while (len > 0 && is_whitespace(at(0))) adv(1);
   }
+
+  const string to_str() {
+    string result;
+    for (int i = 0; i < len; i++) {
+      result += str->at(loc.index + i);
+    }
+    return result;
+  }
 private:
   const u32string * str = nullptr;
   location loc;
   s64 len = 0;
+
+  string repr;
 };
 
 }
