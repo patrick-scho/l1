@@ -11,7 +11,7 @@ namespace lex {
 enum struct token_type {
   integer, decimal, string, identifier, symbol,
   equals, comma, bracket_open, bracket_close, colon,
-  def, fn, if_, else_, for_, while_, return_
+  def, var, fn, if_, else_, for_, while_, return_
 };
 
 struct token {
@@ -114,6 +114,7 @@ token get_identifier(view::view &v) {
 
   string s = result.view.to_str();
        if (s == "def")   result.type = token_type::def;
+       if (s == "var")   result.type = token_type::var;
   else if (s == "fn")    result.type = token_type::fn;
   else if (s == "if")    result.type = token_type::if_;
   else if (s == "else")  result.type = token_type::else_;
@@ -166,7 +167,7 @@ vector<token> lex(view::view v) {
       }
       v.adv(1);
     }
-    else if (is_digit(c) || ((c == '+' || c == '-') && is_digit(v.at(1))))
+    else if (is_digit(c))
       result.push_back(get_number(v));
     else if (c == '"')
       result.push_back(get_string(v));

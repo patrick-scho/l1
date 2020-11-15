@@ -22,7 +22,8 @@ case ::program::expression_type::name:      fn##_expr_name(expr.name,      args)
 #define CALL_STMT(fn, stmt, args) \
 switch (stmt.type) { \
 case ::program::statement_type::assignment: fn##_stmt_assignment(stmt.assignment, args); break; \
-case ::program::statement_type::definition: fn##_stmt_definition(stmt.definition, args); break; \
+case ::program::statement_type::def:        fn##_stmt_def(stmt.def, args); break; \
+case ::program::statement_type::var:        fn##_stmt_var(stmt.var, args); break; \
 case ::program::statement_type::expression: fn##_stmt_expression(stmt.expression, args); break; \
 case ::program::statement_type::if_:        fn##_stmt_if(stmt.if_,        args); break; \
 case ::program::statement_type::for_:       fn##_stmt_for(stmt.for_,       args); break; \
@@ -62,6 +63,7 @@ struct var_decl {
 
 struct fn_decl {
   vector<var_decl> parameters;
+  opt<view::view> name;
   opt<view::view> return_type;
 
   vector<statement> statements;
@@ -86,6 +88,7 @@ enum class literal_type {
 struct literal {
   literal_type type;
   view::view value;
+  bool negative = false;
 };
 
 
@@ -136,13 +139,14 @@ struct while_stmt {
 
 
 enum class statement_type {
-  definition, assignment, if_, for_, while_, return_, expression
+  def, var, assignment, if_, for_, while_, return_, expression
 };
 
 struct statement {
   statement_type type;
 
-  vector<var_decl> definition;
+  vector<var_decl> def;
+  vector<var_decl> var;
   assignment assignment;
   if_stmt if_;
   for_stmt for_;

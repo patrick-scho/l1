@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 
     cout << "\n\nGenerating C Code\n\n";
 
-    string c = codegen::to_c(prg);
+    string c = codegen::to_c_program(prg);
 
     cout << c;
 

@@ -93,6 +93,7 @@ private:
   const u32string * str = nullptr;
   location loc;
   s64 len = 0;
+  bool allocated = false;
 
   string repr;
 };

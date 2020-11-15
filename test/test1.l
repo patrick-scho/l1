@@ -1,3 +1,24 @@
+def f1 = fn (i1, i2: i32 = 12) : i32 {
+  if i1 > 100 {
+    //return i1 + (i1 * i2)
+    return i1 + i2
+  }
+  else if i1 > -200 {
+    return i1 * i2
+  }
+  else {
+    //return i1 - (i1 * i2)
+    return i1 - i2
+  }
+}
+
+var v1 = 123, v2 : i32 = 456
+v2 = 1+2*4-5
+
+var v3 = f1(v1, v2)
+
+
+/*
 type vec3 {
   x y z: f32
 }
@@ -16,10 +37,10 @@ func print(str: string) void {
 func print(i:i64) void {
   C (( printf("%d\n", @i) ))
 }
-
+/*
 v1 = +123.456
 v2 = -456
-
+*/
 print("hallo")
 
 func f1(a b:i64) {
@@ -31,3 +52,9 @@ func f1(a b:i64) {
 
 //v3 = f1(v1 v2)
 print(v3)
+/*
+def c: const i32 = 12
+def a = 1 @(if c > 0 { @+ } else { @- }) 2
+*/
+
+*/

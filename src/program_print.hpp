@@ -34,11 +34,20 @@ void print_stmt_assignment(assignment asgn, int ind) {
   cout << "\n";
 }
 
-void print_stmt_definition(vector<var_decl> def, int ind) {
+void print_stmt_def(vector<var_decl> def, int ind) {
   for (int i = 0; i < def.size(); i++) {
     indent(ind);
     cout << "def ";
     print_var_decl(def[i], ind);
+    cout << "\n";
+  }
+}
+
+void print_stmt_var(vector<var_decl> var, int ind) {
+  for (int i = 0; i < var.size(); i++) {
+    indent(ind);
+    cout << "var ";
+    print_var_decl(var[i], ind);
     cout << "\n";
   }
 }
@@ -127,7 +136,10 @@ void print_stmt(statement stmt, int ind) {
 }
 
 void print_expr_fn_decl(fn_decl fn, int ind) {
-  cout << "Function (";
+  cout << "Function ";
+  if (fn.name.has_value())
+    cout << fn.name.value().to_str() << " ";
+  cout << "(";
   for (int i = 0; i < fn.parameters.size(); i++) {
     if (i != 0) cout << ", ";
     print_var_decl(fn.parameters[i], 0);
@@ -159,6 +171,8 @@ void print_expr_binary_op(binary_op op, int ind) {
 }
 
 void print_expr_literal(literal lit, int ind) {
+  if (lit.negative)
+    cout << "-";
   cout << lit.value.to_str();
 }
 

@@ -98,7 +98,16 @@ program::expression parse_expression(const vector<lex::token> &tokens, int &inde
       result.name = t.view;
       index++;
     }
-  } else if (t.type == lex::token_type::integer) {
+  } else if (t.type == lex::token_type::integer ||
+             t.view.to_str() == "-" && tokens[index+1].type == lex::token_type::integer ||
+             t.view.to_str() == "+" && tokens[index+1].type == lex::token_type::integer) {
+    if (t.type == lex::token_type::symbol) {
+      if (t.view.to_str() == "-")
+        result.literal.negative = true;
+      index++;
+      t = tokens[index];
+    }
+
     result.type = program::expression_type::literal;
     result.literal.type = program::literal_type::integer;
     result.literal.value = t.view;
@@ -156,6 +165,11 @@ vector<program::statement> parse_block(const vector<lex::token> &tokens, int &in
 vector<program::var_decl> parse_var_decls(const vector<lex::token> &tokens, int &index) {
   vector<program::var_decl> result;
 
+  bool is_def = true;
+
+  if (tokens[index-1].type == lex::token_type::var)
+    is_def = false;
+
   while (true) {
     program::var_decl v;
 
@@ -181,7 +195,11 @@ vector<program::var_decl> parse_var_decls(const vector<lex::token> &tokens, int 
 
     if (t.type == lex::token_type::equals) {
       index++;
-      v.value = util::ref(parse_expression(tokens, index));
+      program::expression expr = parse_expression(tokens, index);
+      if (expr.type == program::expression_type::fn_decl) {
+        expr.fn_decl.name = v.name;
+      }
+      v.value = util::ref(expr);
     }
 
     result.push_back(v);
@@ -271,8 +289,13 @@ program::statement parse_statement(const vector<lex::token> &tokens, int &index)
 
   if (t.type == lex::token_type::def) {
     index++;
-    result.type = program::statement_type::definition;
-    result.definition = parse_var_decls(tokens, index);
+    result.type = program::statement_type::def;
+    result.def = parse_var_decls(tokens, index);
+    return result;
+  } else if (t.type == lex::token_type::var) {
+    index++;
+    result.type = program::statement_type::var;
+    result.var = parse_var_decls(tokens, index);
     return result;
   } else if (t.type == lex::token_type::if_) {
     index++;
