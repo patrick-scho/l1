@@ -10,7 +10,7 @@ using namespace std;
 namespace parse {
 
 // Forward Declarations
-program::statement parse_statement(const vector<lex::token> &tokens, int &index);
+vector<program::statement> parse_statement(const vector<lex::token> &tokens, int &index);
 program::expression parse_expression(const vector<lex::token> &tokens, int &index);
 vector<program::statement> parse_block(const vector<lex::token> &tokens, int &index);
 vector<program::var_decl> parse_var_decls(const vector<lex::token> &tokens, int &index);
@@ -35,7 +35,7 @@ program::fn_decl parse_fn_decl(const vector<lex::token> &tokens, int &index) {
   t = tokens[index];
   if (t.type == lex::token_type::colon) {
     index++;
-    result.return_type = tokens[index].view;
+    result.return_type = program::type { tokens[index].view };
     index++;
   }
 
@@ -152,7 +152,9 @@ vector<program::statement> parse_block(const vector<lex::token> &tokens, int &in
   t = tokens[index];
 
   while (t.view.to_str() != "}") {
-    result.push_back(parse_statement(tokens, index));
+    vector<program::statement> stmts = parse_statement(tokens, index);
+    for (int i = 0; i < stmts.size(); i++)
+      result.push_back(stmts[i]);
 
     t = tokens[index];
   }
@@ -187,7 +189,7 @@ vector<program::var_decl> parse_var_decls(const vector<lex::token> &tokens, int 
     if (t.type == lex::token_type::colon) {
       index++;
       t = tokens[index];
-      v.type = t.view;
+      v.type = program::type { t.view };
       index++;
     }
 
@@ -282,50 +284,59 @@ program::assignment parse_assignment(const vector<lex::token> &tokens, int &inde
   return result;
 }
 
-program::statement parse_statement(const vector<lex::token> &tokens, int &index) {
+vector<program::statement> parse_statement(const vector<lex::token> &tokens, int &index) {
+  vector<program::statement> results;
   program::statement result;
 
   lex::token t = tokens[index];
 
   if (t.type == lex::token_type::def) {
     index++;
-    result.type = program::statement_type::def;
-    result.def = parse_var_decls(tokens, index);
-    return result;
+    vector<program::var_decl> decls = parse_var_decls(tokens, index);
+    for (int i = 0; i < decls.size(); i++) {
+      result.type = program::statement_type::def;
+      result.def = decls[i];
+      results.push_back(result);
+    }
   } else if (t.type == lex::token_type::var) {
     index++;
-    result.type = program::statement_type::var;
-    result.var = parse_var_decls(tokens, index);
-    return result;
+    vector<program::var_decl> decls = parse_var_decls(tokens, index);
+    for (int i = 0; i < decls.size(); i++) {
+      result.type = program::statement_type::var;
+      result.var = decls[i];
+      results.push_back(result);
+    }
   } else if (t.type == lex::token_type::if_) {
     index++;
     result.type = program::statement_type::if_;
     result.if_ = parse_if_stmt(tokens, index);
-    return result;
+    results.push_back(result);
   } else if (t.type == lex::token_type::for_) {
     index++;
     result.type = program::statement_type::for_;
     result.for_ = parse_for_stmt(tokens, index);
-    return result;
+    results.push_back(result);
   } else if (t.type == lex::token_type::while_) {
     index++;
     result.type = program::statement_type::while_;
     result.while_ = parse_while_stmt(tokens, index);
-    return result;
+    results.push_back(result);
   } else if (t.type == lex::token_type::return_) {
     index++;
     result.type = program::statement_type::return_;
     result.return_ = parse_expression(tokens, index);
-    return result;
+    results.push_back(result);
   } else if (tokens[index+1].type == lex::token_type::equals) {
     result.type = program::statement_type::assignment;
     result.assignment = parse_assignment(tokens, index);
-    return result;
+    results.push_back(result);
+  } else {
+    result.type = program::statement_type::expression;
+    result.expression = parse_expression(tokens, index);
+    results.push_back(result);
   }
 
-  result.type = program::statement_type::expression;
-  result.expression = parse_expression(tokens, index);
-  return result;
+  return results;
 }
 
 program::program parse(const vector<lex::token> &tokens) {
@@ -334,7 +345,9 @@ program::program parse(const vector<lex::token> &tokens) {
   int index = 0;
 
   while (index < tokens.size()) {
-    result.main.statements.push_back(parse_statement(tokens, index));
+    vector<program::statement> stmts = parse_statement(tokens, index);
+    for (int i = 0; i < stmts.size(); i++)
+      result.main.statements.push_back(stmts[i]);
   }
 
   return result;

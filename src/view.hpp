@@ -23,6 +23,38 @@ bool is_whitespace(char32_t c) {
 struct view {
   view() { }
 
+  view(const view &v) {
+    this->str = v.str;
+    this->loc = v.loc;
+    this->len = v.len;
+    this->repr = v.repr;
+    this->owned_str = v.owned_str;
+    
+    if (v.str == &v.owned_str)
+      this->str = &this->owned_str;
+  }
+
+  view& operator = (const view &v) {
+    this->str = v.str;
+    this->loc = v.loc;
+    this->len = v.len;
+    this->repr = v.repr;
+    this->owned_str = v.owned_str;
+    
+    if (v.str == &v.owned_str)
+      this->str = &this->owned_str;
+
+    return *this;
+  }
+
+  view(const u32string &str) {
+    this->owned_str = str;
+    loc.filename = "";
+    this->str = &this->owned_str;
+    len = str.size();
+    repr = to_str();
+  }
+
   view(const string &filename, const u32string * str) {
     loc.filename = filename;
     this->str = str;
@@ -93,9 +125,9 @@ private:
   const u32string * str = nullptr;
   location loc;
   s64 len = 0;
-  bool allocated = false;
 
   string repr;
+  u32string owned_str;
 };
 
 }

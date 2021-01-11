@@ -8,6 +8,7 @@
 #include "parse.hpp"
 #include "program.hpp"
 #include "program_print.hpp"
+#include "program_types.hpp"
 #include "codegen.hpp"
 #include "util.hpp"
 #include "view.hpp"
@@ -36,8 +37,12 @@ Roadmap:
 
 /*
 Notes:
-- end token
-- no spaces?
+- type inference
+- type checking
+-> context
+- type -> C type
+- run C code
+- infer return type
 */
 
 int main(int argc, char **argv) {
@@ -71,17 +76,20 @@ int main(int argc, char **argv) {
     cout << "\n\nParsing\n\n";
 
     program::program prg = parse::parse(tokens);
+
+    program::check_types(prg);
+
     program::print_program(prg);
 
-    cout << "\n\nGenerating C Code\n\n";
+    // cout << "\n\nGenerating C Code\n\n";
 
-    string c = codegen::to_c_program(prg);
+    // string c = codegen::to_c_program(prg);
 
-    cout << c;
+    // cout << c;
 
     cout << "\n\nDone\n";
   } catch (std::runtime_error &e) {
-    cout << e.what() << endl;
+    cout << "Exception occured: " << e.what() << endl;
     return 1;
   }
 

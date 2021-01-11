@@ -10,52 +10,67 @@ using util::opt;
 
 // Macros
 
-#define CALL_EXPR(fn, expr, args) \
+#define NOTHING
+
+#define CALL_EXPR(fn, expr, args) _CALL_EXPR(fn, expr, args, NOTHING)
+#define RETURN_EXPR(fn, expr, args) _CALL_EXPR(fn, expr, args, return)
+
+#define _CALL_EXPR(fn, expr, args, ret) \
 switch (expr.type) { \
-case ::program::expression_type::fn_decl:   fn##_expr_fn_decl(expr.fn_decl,   args); break; \
-case ::program::expression_type::fn_call:   fn##_expr_fn_call(expr.fn_call,   args); break; \
-case ::program::expression_type::binary_op: fn##_expr_binary_op(expr.binary_op, args); break; \
-case ::program::expression_type::literal:   fn##_expr_literal(expr.literal,   args); break; \
-case ::program::expression_type::name:      fn##_expr_name(expr.name,      args); break; \
+case ::program::expression_type::fn_decl:   ret fn##_expr_fn_decl(expr.fn_decl,   args); break; \
+case ::program::expression_type::fn_call:   ret fn##_expr_fn_call(expr.fn_call,   args); break; \
+case ::program::expression_type::binary_op: ret fn##_expr_binary_op(expr.binary_op, args); break; \
+case ::program::expression_type::literal:   ret fn##_expr_literal(expr.literal,   args); break; \
+case ::program::expression_type::name:      ret fn##_expr_name(expr.name,      args); break; \
+default: util::crash(expr.loc, "Expr is empty"); \
 }
 
-#define CALL_STMT(fn, stmt, args) \
+#define CALL_STMT(fn, stmt, args) _CALL_STMT(fn, stmt, args, NOTHING)
+#define RETURN_STMT(fn, stmt, args) _CALL_STMT(fn, stmt, args, return)
+
+#define _CALL_STMT(fn, stmt, args, ret) \
 switch (stmt.type) { \
-case ::program::statement_type::assignment: fn##_stmt_assignment(stmt.assignment, args); break; \
-case ::program::statement_type::def:        fn##_stmt_def(stmt.def, args); break; \
-case ::program::statement_type::var:        fn##_stmt_var(stmt.var, args); break; \
-case ::program::statement_type::expression: fn##_stmt_expression(stmt.expression, args); break; \
-case ::program::statement_type::if_:        fn##_stmt_if(stmt.if_,        args); break; \
-case ::program::statement_type::for_:       fn##_stmt_for(stmt.for_,       args); break; \
-case ::program::statement_type::while_:     fn##_stmt_while(stmt.while_,     args); break; \
-case ::program::statement_type::return_:    fn##_stmt_return(stmt.return_,    args); break; \
+case ::program::statement_type::assignment: ret fn##_stmt_assignment(stmt.assignment, args); break; \
+case ::program::statement_type::def:        ret fn##_stmt_def(stmt.def, args); break; \
+case ::program::statement_type::var:        ret fn##_stmt_var(stmt.var, args); break; \
+case ::program::statement_type::expression: ret fn##_stmt_expression(stmt.expression, args); break; \
+case ::program::statement_type::if_:        ret fn##_stmt_if(stmt.if_,        args); break; \
+case ::program::statement_type::for_:       ret fn##_stmt_for(stmt.for_,       args); break; \
+case ::program::statement_type::while_:     ret fn##_stmt_while(stmt.while_,     args); break; \
+case ::program::statement_type::return_:    ret fn##_stmt_return(stmt.return_,    args); break; \
+default: util::crash(stmt.loc, "Stmt is empty"); \
 }
 
 namespace program {
-
-// struct context {
-//   context *parent = nullptr;
-
-//   vector<variable> variables;
-//   vector<function> functions;
-//   vector<type> types;
-
-//   function *get_function(view::view name, vector<type>& arg_types, bool recursive = false);
-//   variable *get_variable(view::view name, bool recursive = false);
-//   variable *get_type(view::view name, bool recursive = false);
-// };
 
 // Forward Declarations
 
 struct expression;
 struct statement;
+struct fn_decl;
 
 // Misc
 
+struct type {
+  view::view name;
+};
+
 struct var_decl {
   view::view name;
-  opt<view::view> type;
+  opt<type> type;
   opt<util::ref<expression>> value;
+};
+
+struct context {
+  context *parent = nullptr;
+
+  vector<var_decl> variables;
+  vector<fn_decl> functions;
+  vector<type> types;
+
+  // function *get_function(view::view name, vector<type>& arg_types, bool recursive = false);
+  // variable *get_variable(view::view name, bool recursive = false);
+  // variable *get_type(view::view name, bool recursive = false);
 };
 
 
@@ -64,9 +79,11 @@ struct var_decl {
 struct fn_decl {
   vector<var_decl> parameters;
   opt<view::view> name;
-  opt<view::view> return_type;
+  opt<type> return_type;
 
   vector<statement> statements;
+
+  context ctx;
 };
 
 struct fn_call {
@@ -145,8 +162,8 @@ enum class statement_type {
 struct statement {
   statement_type type;
 
-  vector<var_decl> def;
-  vector<var_decl> var;
+  var_decl def;
+  var_decl var;
   assignment assignment;
   if_stmt if_;
   for_stmt for_;

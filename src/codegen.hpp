@@ -16,7 +16,7 @@ void to_c_expr_fn_decl(program::fn_decl fn, stringstream& sstr);
 
 void to_c_var_decl(program::var_decl var, stringstream& sstr) {
   if (var.type.has_value())
-    sstr << var.type.value().to_str() << " ";
+    sstr << var.type.value().name.to_str() << " ";
   else
     sstr << "TODO ";
 
@@ -31,27 +31,23 @@ void to_c_var_decl(program::var_decl var, stringstream& sstr) {
 void to_c_stmt_assignment(program::assignment asgn, stringstream& sstr) {
   sstr << asgn.name.to_str() << " = ";
   to_c_expr(asgn.expr, sstr);
-  sstr << "\n";
+  sstr << ";\n";
 }
 
-void to_c_stmt_def(vector<program::var_decl> def, stringstream &sstr) {
-  for (int i = 0; i < def.size(); i++) {
-    if (def[i].value.has_value() &&
-       ((program::expression)def[i].value.value()).type == program::expression_type::fn_decl) {
-      to_c_expr_fn_decl(((program::expression)def[i].value.value()).fn_decl, sstr);
-    } else {
-      sstr << "const ";
-      to_c_var_decl(def[i], sstr);
-      sstr << ";\n";
-    }
-  }
-}
-
-void to_c_stmt_var(vector<program::var_decl> var, stringstream& sstr) {
-  for (int i = 0; i < var.size(); i++) {
-    to_c_var_decl(var[i], sstr);
+void to_c_stmt_def(program::var_decl def, stringstream &sstr) {
+  if (def.value.has_value() &&
+      ((program::expression)def.value.value()).type == program::expression_type::fn_decl) {
+    to_c_expr_fn_decl(((program::expression)def.value.value()).fn_decl, sstr);
+  } else {
+    sstr << "const ";
+    to_c_var_decl(def, sstr);
     sstr << ";\n";
   }
+}
+
+void to_c_stmt_var(program::var_decl var, stringstream& sstr) {
+  to_c_var_decl(var, sstr);
+  sstr << ";\n";
 }
 
 void to_c_stmt_expression(program::expression expr, stringstream& sstr) {
@@ -127,7 +123,7 @@ void to_c_stmt(program::statement stmt, stringstream& sstr) {
 
 void to_c_expr_fn_decl(program::fn_decl fn, stringstream& sstr) {
   if (fn.return_type.has_value())
-    sstr << fn.return_type.value().to_str() << " ";
+    sstr << fn.return_type.value().name.to_str() << " ";
   else
     sstr << "void ";
   if (fn.name.has_value())
@@ -140,7 +136,7 @@ void to_c_expr_fn_decl(program::fn_decl fn, stringstream& sstr) {
 
     program::var_decl var = fn.parameters[i];
     if (var.type.has_value())
-      sstr << var.type.value().to_str() << " ";
+      sstr << var.type.value().name.to_str() << " ";
     else
       sstr << "TODO ";
 

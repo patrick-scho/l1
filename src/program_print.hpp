@@ -20,7 +20,7 @@ void print_stmt(statement stmt, int ind);
 void print_var_decl(var_decl var, int ind) {
   cout << var.name.to_str();
   if (var.type.has_value())
-    cout << " : " << var.type.value().to_str();
+    cout << " : " << var.type.value().name.to_str();
   if (var.value.has_value()) {
     cout << " = ";
     print_expr(var.value.value(), ind);
@@ -34,22 +34,18 @@ void print_stmt_assignment(assignment asgn, int ind) {
   cout << "\n";
 }
 
-void print_stmt_def(vector<var_decl> def, int ind) {
-  for (int i = 0; i < def.size(); i++) {
-    indent(ind);
-    cout << "def ";
-    print_var_decl(def[i], ind);
-    cout << "\n";
-  }
+void print_stmt_def(var_decl def, int ind) {
+  indent(ind);
+  cout << "def ";
+  print_var_decl(def, ind);
+  cout << "\n";
 }
 
-void print_stmt_var(vector<var_decl> var, int ind) {
-  for (int i = 0; i < var.size(); i++) {
-    indent(ind);
-    cout << "var ";
-    print_var_decl(var[i], ind);
-    cout << "\n";
-  }
+void print_stmt_var(var_decl var, int ind) {
+  indent(ind);
+  cout << "var ";
+  print_var_decl(var, ind);
+  cout << "\n";
 }
 
 void print_stmt_expression(expression expr, int ind) {
@@ -135,6 +131,7 @@ void print_stmt(statement stmt, int ind) {
   CALL_STMT(print, stmt, ind)
 }
 
+
 void print_expr_fn_decl(fn_decl fn, int ind) {
   cout << "Function ";
   if (fn.name.has_value())
@@ -146,7 +143,7 @@ void print_expr_fn_decl(fn_decl fn, int ind) {
   } 
   cout << ")";
   if (fn.return_type.has_value())
-    cout << " : " << fn.return_type.value().to_str();
+    cout << " : " << fn.return_type.value().name.to_str();
   cout << " {\n";
   for (int i = 0; i < fn.statements.size(); i++) {
     print_stmt(fn.statements[i], ind + 2);
